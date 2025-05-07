@@ -1,0 +1,368 @@
+import { useState, useRef } from "react";
+import { useParams, useLocation } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Loader2, Upload, Check, AlertCircle } from "lucide-react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import BookingStatusSteps from "@/components/BookingStatusSteps";
+import PaymentMethodCard from "@/components/PaymentMethodCard";
+import FileUpload from "@/components/FileUpload";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { BookingWithDetails, PaymentAccount } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+} from "@/components/ui/alert";
+import { Helmet } from "react-helmet";
+
+const paymentSchema = z.object({
+  paymentReference: z.string().min(3, "Payment reference is required"),
+});
+
+type PaymentFormValues = z.infer<typeof paymentSchema>;
+
+export default function PaymentPage() {
+  const { bookingId } = useParams();
+  const [, navigate] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [paymentFile, setPaymentFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  
+  // Steps for the booking process
+  const steps = [
+    { step: 1, label: "Select Flight", status: "completed" as const },
+    { step: 2, label: "Passenger Details", status: "completed" as const },
+    { step: 3, label: "Payment", status: "active" as const },
+    { step: 4, label: "Confirmation", status: "upcoming" as const },
+  ];
+
+  // Fetch booking details
+  const {
+    data: booking,
+    isLoading: bookingLoading,
+    error: bookingError,
+  } = useQuery<BookingWithDetails>({
+    queryKey: [`/api/bookings/${bookingId}`],
+    enabled: !!bookingId,
+  });
+
+  // Fetch payment account details
+  const { data: paymentAccounts = [], isLoading: accountsLoading } = useQuery<
+    PaymentAccount[]
+  >({
+    queryKey: ["/api/payment-accounts"],
+  });
+
+  // Form setup with validation
+  const form = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: {
+      paymentReference: "",
+    },
+  });
+
+  // Payment proof upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: async ({
+      bookingId,
+      formData,
+    }: {
+      bookingId: number;
+      formData: FormData;
+    }) => {
+      const res = await fetch(`/api/bookings/${bookingId}/payment`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to upload payment proof");
+      }
+      
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Payment information submitted",
+        description: "Your payment will be verified shortly.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      navigate("/my-bookings");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Payment submission failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    },
+  });
+
+  const onSubmit = (values: PaymentFormValues) => {
+    if (!booking) return;
+    
+    setIsSubmitting(true);
+    
+    const formData = new FormData();
+    formData.append("paymentReference", values.paymentReference);
+    
+    if (paymentFile) {
+      formData.append("paymentProof", paymentFile);
+    }
+    
+    uploadMutation.mutate({
+      bookingId: booking.id,
+      formData,
+    });
+  };
+
+  const handleFileSelect = (file: File) => {
+    setPaymentFile(file);
+  };
+
+  // Handle going back to booking details
+  const handleBack = () => {
+    navigate(`/booking/${booking?.flightId}`);
+  };
+
+  const calculateTotalPrice = (basePrice: number): number => {
+    const taxesAndFees = basePrice * 0.13; // 13% for taxes & fees
+    const serviceFee = basePrice * 0.04; // 4% service fee
+    return basePrice + taxesAndFees + serviceFee;
+  };
+
+  if (bookingLoading || accountsLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading payment details...</span>
+      </div>
+    );
+  }
+
+  if (bookingError || !booking) {
+    return (
+      <div className="flex justify-center items-center min-h-screen flex-col">
+        <h1 className="text-2xl font-bold text-red-500">Error loading booking</h1>
+        <p className="mt-2">Unable to load booking details. Please try again.</p>
+        <Button onClick={() => navigate("/my-bookings")} className="mt-4">
+          Back to My Bookings
+        </Button>
+      </div>
+    );
+  }
+
+  const totalPrice = calculateTotalPrice(booking.flight.price);
+  const taxesAndFees = booking.flight.price * 0.13;
+  const serviceFee = booking.flight.price * 0.04;
+  const paymentAccount = paymentAccounts[0];
+
+  return (
+    <>
+      <Helmet>
+        <title>Payment | SkyBooker</title>
+        <meta name="description" content="Complete your payment for your flight booking. Upload payment proof and provide reference number to confirm your booking." />
+      </Helmet>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4">Payment</h2>
+              
+              {/* Booking Steps */}
+              <BookingStatusSteps steps={steps} className="mb-8" />
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Payment Instructions */}
+                <div className="lg:col-span-2">
+                  <div className="bg-white rounded-lg shadow-md p-5 mb-6">
+                    <h3 className="text-lg font-bold mb-4">Payment Instructions</h3>
+                    
+                    <div className="mb-6 border-b pb-4">
+                      <p className="text-gray-700 mb-3">
+                        Please use one of the following payment methods to complete your booking:
+                      </p>
+                      
+                      {paymentAccount ? (
+                        <PaymentMethodCard paymentAccount={paymentAccount} />
+                      ) : (
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Payment information unavailable</AlertTitle>
+                          <AlertDescription>
+                            Please contact customer support to complete your payment.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+
+                    <Form {...form}>
+                      <form 
+                        ref={formRef}
+                        onSubmit={form.handleSubmit(onSubmit)} 
+                        className="space-y-6"
+                      >
+                        <div>
+                          <h4 className="font-bold mb-3">Upload Payment Proof</h4>
+                          <p className="text-gray-700 mb-4">
+                            After making your payment, please upload a proof of payment below (screenshot, reference number, etc.).
+                          </p>
+                          
+                          <FileUpload
+                            onFileSelect={handleFileSelect}
+                            accept="image/*"
+                          />
+
+                          <div className="mt-6">
+                            <FormField
+                              control={form.control}
+                              name="paymentReference"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>
+                                    Payment Reference Number (if applicable)
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="e.g., TRX123456789" 
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="lg:hidden mt-6">
+                          <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full bg-orange-500 hover:bg-orange-600"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              "Complete Booking"
+                            )}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleBack}
+                            className="w-full mt-2"
+                            disabled={isSubmitting}
+                          >
+                            Back to Passenger Details
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </div>
+                </div>
+
+                {/* Order Summary */}
+                <div className="lg:col-span-1">
+                  <div className="bg-white rounded-lg shadow-md p-5 sticky top-6">
+                    <h3 className="text-lg font-bold mb-4">Booking Summary</h3>
+                    
+                    <div className="space-y-3 mb-4">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Flight (1 Adult)</span>
+                        <span>${booking.flight.price.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Taxes & Fees</span>
+                        <span>${taxesAndFees.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Service Fee</span>
+                        <span>${serviceFee.toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-3 mb-4">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold">Total</span>
+                        <span className="text-xl font-bold text-primary">
+                          ${totalPrice.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-4 text-sm text-gray-600">
+                      <p className="mb-2">
+                        Your booking will be confirmed once payment is verified.
+                      </p>
+                      <p>
+                        Payment status:{" "}
+                        <span className="text-yellow-500 font-medium">
+                          Pending
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="mt-6 hidden lg:block">
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full bg-orange-500 hover:bg-orange-600"
+                        onClick={() => formRef.current?.requestSubmit()}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          "Complete Booking"
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleBack}
+                        className="w-full mt-2"
+                        disabled={isSubmitting}
+                      >
+                        Back to Passenger Details
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </>
+  );
+}
