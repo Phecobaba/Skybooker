@@ -4,6 +4,7 @@ import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
+import rateLimit from 'express-rate-limit';
 import { storage } from "./storage";
 import { User as SelectUser, loginSchema, insertUserSchema } from "@shared/schema";
 
@@ -29,6 +30,26 @@ export async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // Configure rate limiters
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: { message: 'Too many login attempts, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  
+  const apiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 60, // Limit each IP to 60 requests per minute
+    message: { message: 'Too many requests, please try again later' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  
+  // Apply rate limiter to all API routes
+  app.use('/api/', apiLimiter);
+  
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "skybooker-secret-key",
     resave: false,
@@ -36,6 +57,9 @@ export function setupAuth(app: Express) {
     store: storage.sessionStore,
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true, // Prevents client-side JS from reading the cookie
+      secure: process.env.NODE_ENV === 'production', // Only set secure in production
+      sameSite: 'lax', // Protection against CSRF
     },
   };
 
@@ -69,7 +93,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/register", authLimiter, async (req, res, next) => {
     try {
       // Validate the request
       const parseResult = insertUserSchema.safeParse(req.body);
@@ -107,7 +131,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
+  app.post("/api/login", authLimiter, (req, res, next) => {
     // Validate the request
     const parseResult = loginSchema.safeParse(req.body);
     if (!parseResult.success) {
