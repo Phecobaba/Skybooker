@@ -43,11 +43,6 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
 
-  // Redirect if user is already logged in
-  if (user) {
-    return <Redirect to="/" />;
-  }
-
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -85,6 +80,11 @@ export default function AuthPage() {
   const toggleAuthMode = () => {
     setAuthMode(authMode === "login" ? "register" : "login");
   };
+
+  // Redirect if user is already logged in
+  if (user) {
+    return <Redirect to="/" />;
+  }
 
   return (
     <div className="min-h-screen flex bg-gray-50">
