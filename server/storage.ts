@@ -56,7 +56,7 @@ export interface IStorage {
   updatePaymentAccount(account: InsertPaymentAccount): Promise<PaymentAccount>;
 
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any for session store type to avoid type errors
 }
 
 export class MemStorage implements IStorage {
@@ -66,7 +66,7 @@ export class MemStorage implements IStorage {
   private bookings: Map<number, Booking>;
   private paymentAccounts: Map<number, PaymentAccount>;
   
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any for session store type
   
   currentUserId: number;
   currentLocationId: number;
@@ -507,4 +507,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Import the DatabaseStorage class
+import { DatabaseStorage } from "./storage-db";
+
+// Use DatabaseStorage instead of MemStorage
+export const storage = new DatabaseStorage();
