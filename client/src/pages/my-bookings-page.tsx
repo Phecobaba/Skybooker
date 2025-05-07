@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Helmet } from "react-helmet";
+import ReceiptDownloadButton from "@/components/ReceiptDownloadButton";
 
 export default function MyBookingsPage() {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function MyBookingsPage() {
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const queryClient = useQueryClient();
 
   // Fetch user's bookings
   const {
@@ -240,16 +242,38 @@ export default function MyBookingsPage() {
                               ${booking.flight.price.toFixed(2)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <Link href={`/payment/${booking.id}`}>
-                                <a className="text-primary hover:text-primary/80 mr-3">
-                                  {booking.status === "Pending" ? "Complete Payment" : "View"}
-                                </a>
-                              </Link>
-                              {booking.status === "Pending" && (
-                                <a href="#" className="text-red-600 hover:text-red-900">
-                                  Cancel
-                                </a>
-                              )}
+                              <div className="flex justify-end items-center space-x-2">
+                                <Link href={`/payment/${booking.id}`}>
+                                  <a className="text-primary hover:text-primary/80">
+                                    {booking.status === "Pending" ? "Complete Payment" : "View"}
+                                  </a>
+                                </Link>
+                                
+                                {/* Receipt download button */}
+                                {(booking.status.toLowerCase() === "paid" || booking.status.toLowerCase() === "completed") && (
+                                  <ReceiptDownloadButton 
+                                    bookingId={booking.id}
+                                    status={booking.status}
+                                    receiptPath={booking.receiptPath}
+                                    onReceiptGenerated={(path) => {
+                                      // Update the local booking object with the new receipt path
+                                      queryClient.setQueryData(["/api/bookings"], (oldData: BookingWithDetails[] | undefined) => {
+                                        if (!oldData) return [];
+                                        return oldData.map(b => 
+                                          b.id === booking.id ? { ...b, receiptPath: path } : b
+                                        );
+                                      });
+                                    }}
+                                    size="sm"
+                                  />
+                                )}
+                                
+                                {booking.status === "Pending" && (
+                                  <a href="#" className="text-red-600 hover:text-red-900">
+                                    Cancel
+                                  </a>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}

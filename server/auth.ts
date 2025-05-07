@@ -114,7 +114,7 @@ export function setupAuth(app: Express) {
       return res.status(400).json({ message: "Invalid input", errors: parseResult.error.errors });
     }
 
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
       if (err) {
         return next(err);
       }
@@ -144,16 +144,16 @@ export function setupAuth(app: Express) {
 }
 
 // Middleware to check if user is admin
-export function isAdmin(req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+export function isAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ message: "Not authenticated" });
   }
   
-  if (!req.user.is_admin) {
+  if (!req.user.isAdmin) {
     return res.status(403).json({ message: "Not authorized" });
   }
   
   next();
 }
 
-import { insertUserSchema } from "@shared/schema";
+
