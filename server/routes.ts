@@ -48,9 +48,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
+  
+  // Create receipts directory if it doesn't exist
+  const receiptsDir = path.join(process.cwd(), "uploads", "receipts");
+  if (!fs.existsSync(receiptsDir)) {
+    fs.mkdirSync(receiptsDir, { recursive: true });
+  }
 
   // Serve uploaded files
   app.use("/uploads", express.static(uploadsDir));
+  
+  // Import PDF service
+  const { generateReceiptPdf } = await import("./pdf-service");
+  // Initialize email service
+  const { initializeEmailService, sendPaymentConfirmationEmail } = await import("./email-service");
+  initializeEmailService().catch(error => console.error("Failed to initialize email service:", error));
 
   // ===== USER ROUTES =====
 
@@ -198,10 +210,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Payment proof or reference is required" });
       }
 
+      // Update booking with payment info
       const updatedBooking = await storage.updateBookingPayment(bookingId, {
         paymentReference,
         paymentProof
       });
+      
+      // If the status is already set to "Paid", generate receipt
+      if (updatedBooking && updatedBooking.status.toLowerCase() === "paid") {
+        try {
+          // Get full booking details with relations
+          const fullBooking = await storage.getBookingById(bookingId);
+          if (fullBooking) {
+            // Generate receipt if it doesn't exist
+            if (!fullBooking.receiptPath) {
+              const receiptPath = await generateReceiptPdf(fullBooking);
+              await storage.updateBookingReceipt(bookingId, receiptPath);
+              // Update our local reference too
+              if (updatedBooking) {
+                updatedBooking.receiptPath = receiptPath;
+              }
+            }
+          }
+        } catch (genError) {
+          console.error("Error generating receipt:", genError);
+          // We'll still return success for the payment update, but log the receipt generation error
+        }
+      }
 
       res.json(updatedBooking);
     } catch (error) {
@@ -216,6 +251,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(accounts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch payment accounts" });
+    }
+  });
+  
+  // Generate receipt for booking
+  app.post("/api/bookings/:id/receipt", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to generate a receipt" });
+    }
+
+    try {
+      const bookingId = parseInt(req.params.id);
+      if (isNaN(bookingId)) {
+        return res.status(400).json({ message: "Invalid booking ID" });
+      }
+
+      const booking = await storage.getBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+
+      // Users can only generate receipts for their own bookings (admin can generate all)
+      if (booking.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to access this booking" });
+      }
+      
+      // Only generate receipt for paid bookings
+      if (booking.status.toLowerCase() !== 'paid' && booking.status.toLowerCase() !== 'completed') {
+        return res.status(400).json({ message: "Receipt can only be generated for paid bookings" });
+      }
+
+      // Generate PDF receipt
+      const receiptPath = await generateReceiptPdf(booking);
+      
+      // Store receipt path in database
+      await storage.updateBookingReceipt(bookingId, receiptPath);
+      
+      // Return the path to download the receipt
+      res.json({ receiptPath });
+    } catch (error) {
+      console.error("Error generating receipt:", error);
+      res.status(500).json({ message: "Failed to generate receipt" });
+    }
+  });
+  
+  // Download receipt for booking
+  app.get("/api/bookings/:id/receipt", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "You must be logged in to download a receipt" });
+    }
+
+    try {
+      const bookingId = parseInt(req.params.id);
+      if (isNaN(bookingId)) {
+        return res.status(400).json({ message: "Invalid booking ID" });
+      }
+
+      const booking = await storage.getBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+
+      // Users can only download receipts for their own bookings (admin can download all)
+      if (booking.userId !== req.user.id && !req.user.isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to access this booking" });
+      }
+      
+      // Check if receipt exists
+      if (!booking.receiptPath) {
+        // Generate one if it doesn't exist
+        const receiptPath = await generateReceiptPdf(booking);
+        await storage.updateBookingReceipt(bookingId, receiptPath);
+        booking.receiptPath = receiptPath;
+      }
+      
+      // Send the receipt file
+      const filePath = path.join(process.cwd(), booking.receiptPath.replace(/^\//, ''));
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "Receipt file not found" });
+      }
+      
+      res.download(filePath, `SkyBooker_Receipt_${booking.id}.pdf`);
+    } catch (error) {
+      console.error("Error downloading receipt:", error);
+      res.status(500).json({ message: "Failed to download receipt" });
     }
   });
 
@@ -366,16 +485,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { status } = req.body;
-      if (!status || !["Pending", "Confirmed", "Declined", "Completed"].includes(status)) {
+      if (!status || !["Pending", "Confirmed", "Paid", "Declined", "Completed"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
 
-      const booking = await storage.updateBookingStatus(bookingId, status);
-      if (!booking) {
+      // Get the current booking to check previous status
+      const currentBooking = await storage.getBookingById(bookingId);
+      if (!currentBooking) {
         return res.status(404).json({ message: "Booking not found" });
       }
+      
+      const previousStatus = currentBooking.status;
+      
+      // Update the status
+      const updatedBooking = await storage.updateBookingStatus(bookingId, status);
+      if (!updatedBooking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      // If status changed to "Paid", generate receipt automatically
+      if (status === "Paid" && previousStatus !== "Paid") {
+        try {
+          // Get full booking details again after status update
+          const fullBooking = await storage.getBookingById(bookingId);
+          if (fullBooking) {
+            // Generate receipt
+            const receiptPath = await generateReceiptPdf(fullBooking);
+            
+            // Update booking with receipt path
+            await storage.updateBookingReceipt(bookingId, receiptPath);
+            
+            // Send payment confirmation email with receipt
+            sendPaymentConfirmationEmail(fullBooking).catch(err => 
+              console.error("Failed to send payment confirmation email:", err)
+            );
+          }
+        } catch (genError) {
+          console.error("Error generating receipt:", genError);
+          // We'll still return success for the status update, but log the receipt generation error
+        }
+      }
 
-      res.json(booking);
+      res.json(updatedBooking);
     } catch (error) {
       res.status(500).json({ message: "Failed to update booking status" });
     }

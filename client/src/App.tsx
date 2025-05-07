@@ -19,6 +19,7 @@ import AdminUsersPage from "@/pages/admin/users-page";
 import AdminAccountSettingsPage from "@/pages/admin/account-settings-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
+import SmartSupp from "@/components/SmartSupp";
 
 function Router() {
   return (
@@ -52,6 +53,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <SmartSupp />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
