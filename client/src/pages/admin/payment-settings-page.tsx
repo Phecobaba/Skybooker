@@ -46,26 +46,29 @@ export default function AdminPaymentSettingsPage() {
     queryKey: ["/api/payment-accounts"],
   });
 
-  // Get the first account (we only manage one set of payment details)
-  const account = accounts.length > 0 ? accounts[0] : null;
+  // Get the most recent account (which should be the one with the highest ID)
+  const account = accounts.length > 0 
+    ? accounts.sort((a, b) => b.id - a.id)[0] // Sort by ID descending and get the first one
+    : null;
 
-  // Form setup
+  // Form setup with empty defaults initially
   const form = useForm({
     resolver: zodResolver(insertPaymentAccountSchema),
     defaultValues: {
-      bankName: account?.bankName || "",
-      accountName: account?.accountName || "",
-      accountNumber: account?.accountNumber || "",
-      swiftCode: account?.swiftCode || "",
-      mobileProvider: account?.mobileProvider || "",
-      mobileNumber: account?.mobileNumber || "",
+      bankName: "",
+      accountName: "",
+      accountNumber: "",
+      swiftCode: "",
+      mobileProvider: "",
+      mobileNumber: "",
     },
     mode: "onChange",
   });
 
-  // Update form values when account data loads
+  // Update form values when account data loads or changes
   useEffect(() => {
     if (account) {
+      console.log("Updating form with account:", account);
       form.reset({
         bankName: account.bankName || "",
         accountName: account.accountName || "",
@@ -75,7 +78,7 @@ export default function AdminPaymentSettingsPage() {
         mobileNumber: account.mobileNumber || "",
       });
     }
-  }, [account, form]);
+  }, [accounts, form]); // Depend on the accounts array instead of just account
 
   // Save payment account details mutation
   const updatePaymentAccountMutation = useMutation({
