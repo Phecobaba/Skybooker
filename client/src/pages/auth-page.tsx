@@ -14,8 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect } from "wouter";
-import { Lock, User, UserPlus } from "lucide-react";
+import { Redirect, Link } from "wouter";
+import { Lock, User, UserPlus, Home } from "lucide-react";
 import { insertUserSchema } from "@shared/schema";
 
 const loginSchema = z.object({
@@ -92,7 +92,13 @@ export default function AuthPage() {
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="text-center">
-            <h2 className="mt-6 text-3xl font-bold text-gray-900">
+            <div className="flex justify-center items-center">
+              <Link href="/" className="flex items-center mt-4 mb-2 text-sm text-gray-600 hover:text-primary">
+                <Home className="h-4 w-4 mr-1" />
+                Go to Home
+              </Link>
+            </div>
+            <h2 className="mt-3 text-3xl font-bold text-gray-900">
               {authMode === "login" ? "Sign in to your account" : "Create your account"}
             </h2>
             <p className="mt-2 text-sm text-gray-600">
