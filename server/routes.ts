@@ -139,8 +139,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create booking (requires auth)
-  app.post("/api/bookings", async (req, res) => {
+  // Create booking (requires auth) - sensitive operation with stricter rate limiting
+  app.post("/api/bookings", sensitiveApiLimiter, async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "You must be logged in to book a flight" });
     }
@@ -204,8 +204,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload payment proof for booking
-  app.post("/api/bookings/:id/payment", upload.single("paymentProof"), async (req, res) => {
+  // Upload payment proof for booking - sensitive operation with stricter rate limiting
+  app.post("/api/bookings/:id/payment", sensitiveApiLimiter, upload.single("paymentProof"), async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "You must be logged in to update payment" });
     }
@@ -277,8 +277,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Generate receipt for booking
-  app.post("/api/bookings/:id/receipt", async (req, res) => {
+  // Generate receipt for booking - sensitive operation with stricter rate limiting
+  app.post("/api/bookings/:id/receipt", sensitiveApiLimiter, async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "You must be logged in to generate a receipt" });
     }
@@ -499,8 +499,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update booking status (admin only)
-  app.put("/api/admin/bookings/:id/status", isAdmin, async (req, res) => {
+  // Update booking status (admin only) - sensitive operation with stricter rate limiting
+  app.put("/api/admin/bookings/:id/status", sensitiveApiLimiter, isAdmin, async (req, res) => {
     try {
       const bookingId = parseInt(req.params.id);
       if (isNaN(bookingId)) {
@@ -565,8 +565,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update payment accounts (admin only)
-  app.post("/api/admin/payment-accounts", isAdmin, async (req, res) => {
+  // Update payment accounts (admin only) - sensitive operation with stricter rate limiting
+  app.post("/api/admin/payment-accounts", sensitiveApiLimiter, isAdmin, async (req, res) => {
     try {
       const parseResult = insertPaymentAccountSchema.safeParse(req.body);
       if (!parseResult.success) {

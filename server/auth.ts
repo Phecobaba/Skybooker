@@ -55,11 +55,13 @@ export function setupAuth(app: Express) {
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
+    name: 'skyb_sid', // Custom name instead of default 'connect.sid'
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       httpOnly: true, // Prevents client-side JS from reading the cookie
       secure: process.env.NODE_ENV === 'production', // Only set secure in production
       sameSite: 'lax', // Protection against CSRF
+      path: '/', // Restrict cookie to root path
     },
   };
 
@@ -154,9 +156,16 @@ export function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  app.post("/api/logout", (req, res, next) => {
+  app.post("/api/logout", authLimiter, (req, res, next) => {
+    // Only allow authenticated users to logout
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
     req.logout((err) => {
       if (err) return next(err);
+      // Clear the cookie from the client
+      res.clearCookie('skyb_sid');
       res.sendStatus(200);
     });
   });
