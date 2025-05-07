@@ -1,10 +1,12 @@
-import type { Express } from "express";
+import { type Express } from "express";
+import express from 'express';
 import { createServer, type Server } from "http";
 import { setupAuth, isAdmin } from "./auth";
 import { storage } from "./storage";
 import multer from "multer";
 import path from "path";
 import { randomBytes } from "crypto";
+import rateLimit from 'express-rate-limit';
 import { 
   insertFlightSchema, 
   insertLocationSchema, 
@@ -12,6 +14,24 @@ import {
   insertPaymentAccountSchema,
   flightSearchSchema
 } from "@shared/schema";
+
+// Rate limiter for general API requests
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Stricter rate limiter for sensitive operations
+export const sensitiveApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 requests per windowMs
+  message: 'Too many sensitive operations from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Set up multer for file uploads
 const storage_config = multer.diskStorage({
@@ -41,6 +61,9 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // sets up /api/register, /api/login, /api/logout, /api/user
   setupAuth(app);
+  
+  // Apply rate limiting to all API routes
+  app.use("/api/", apiLimiter);
 
   // Create uploads directory if it doesn't exist
   const fs = await import("fs");
@@ -561,5 +584,3 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
-
-import express from "express";
