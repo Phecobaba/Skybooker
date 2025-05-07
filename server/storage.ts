@@ -236,7 +236,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    // Ensure isAdmin is a boolean
+    const user: User = { 
+      ...insertUser, 
+      id,
+      isAdmin: insertUser.isAdmin || false // Default to false if not provided
+    };
     this.users.set(id, user);
     return user;
   }
@@ -444,12 +449,23 @@ export class MemStorage implements IStorage {
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
     const id = this.currentBookingId++;
-    const booking: Booking = { 
-      ...insertBooking, 
+    
+    // Create booking with proper typing
+    const booking: Booking = {
       id,
+      userId: insertBooking.userId,
+      flightId: insertBooking.flightId,
       bookingDate: new Date(),
-      status: "Pending"
+      passengerFirstName: insertBooking.passengerFirstName,
+      passengerLastName: insertBooking.passengerLastName,
+      passengerEmail: insertBooking.passengerEmail,
+      passengerPhone: insertBooking.passengerPhone,
+      status: "Pending",
+      paymentReference: null,
+      paymentProof: null,
+      receiptPath: null
     };
+    
     this.bookings.set(id, booking);
     return booking;
   }
@@ -517,7 +533,16 @@ export class MemStorage implements IStorage {
       id = this.currentPaymentAccountId++;
     }
     
-    const updatedAccount: PaymentAccount = { ...account, id };
+    // Ensure all optional fields have null values if undefined
+    const updatedAccount: PaymentAccount = { 
+      id,
+      bankName: account.bankName ?? null,
+      accountName: account.accountName ?? null,
+      accountNumber: account.accountNumber ?? null,
+      swiftCode: account.swiftCode ?? null,
+      mobileProvider: account.mobileProvider ?? null,
+      mobileNumber: account.mobileNumber ?? null
+    };
     this.paymentAccounts.set(id, updatedAccount);
     
     return updatedAccount;

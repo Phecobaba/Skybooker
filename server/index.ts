@@ -1,9 +1,27 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import helmet from 'helmet';
 
 const app = express();
-app.use(express.json());
+
+// Apply Helmet security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Needed for development
+      connectSrc: ["'self'", 'wss:', 'ws:'], // Allow WebSocket connections
+      imgSrc: ["'self'", 'data:'], // Allow images from our domain and data URLs
+      styleSrc: ["'self'", "'unsafe-inline'"], // Allow styles from our domain
+      fontSrc: ["'self'", 'data:'], // Allow fonts from our domain
+    },
+  },
+  // Set strict options but allow features that the app needs
+  crossOriginEmbedderPolicy: false, // Needed for some third-party scripts
+}));
+
+app.use(express.json({ limit: '1mb' })); // Limit request size
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
