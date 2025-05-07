@@ -15,6 +15,7 @@ import AdminFlightsPage from "@/pages/admin/flights-page";
 import AdminLocationsPage from "@/pages/admin/locations-page";
 import AdminBookingsPage from "@/pages/admin/bookings-page";
 import AdminPaymentsPage from "@/pages/admin/payments-page";
+import AdminPaymentSettingsPage from "@/pages/admin/payment-settings-page";
 import AdminUsersPage from "@/pages/admin/users-page";
 import AdminAccountSettingsPage from "@/pages/admin/account-settings-page";
 import { ProtectedRoute } from "./lib/protected-route";
