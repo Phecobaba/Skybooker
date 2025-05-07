@@ -18,6 +18,12 @@ import connectPg from "connect-pg-simple";
 import { db, pool } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { IStorage } from "./storage";
+import { 
+  sendBookingConfirmationEmail, 
+  sendBookingStatusUpdateEmail, 
+  sendPaymentConfirmationEmail, 
+  initializeEmailService 
+} from "./email-service";
 
 const PostgresSessionStore = connectPg(session);
 
@@ -28,6 +34,11 @@ export class DatabaseStorage implements IStorage {
     this.sessionStore = new PostgresSessionStore({
       pool,
       createTableIfMissing: true
+    });
+    
+    // Initialize the email service when storage is created
+    initializeEmailService().catch(err => {
+      console.error("Failed to initialize email service:", err);
     });
   }
 
@@ -313,17 +324,69 @@ export class DatabaseStorage implements IStorage {
       .values(bookingWithDefaults)
       .returning();
     
+    try {
+      // Get the complete booking with details to send in the email
+      const bookingWithDetails = await this.enhanceBookingWithDetails(booking);
+      // Send booking confirmation email
+      await sendBookingConfirmationEmail(bookingWithDetails);
+      console.log(`Booking confirmation email sent for booking ID: ${booking.id}`);
+    } catch (error) {
+      console.error(`Failed to send booking confirmation email for booking ID: ${booking.id}`, error);
+      // We don't throw the error here because we still want to return the booking
+      // even if the email fails to send
+    }
+    
     return booking;
   }
 
   async updateBookingStatus(id: number, status: string): Promise<Booking | undefined> {
+    // Get the booking before update to know the previous status
+    const [existingBooking] = await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.id, id));
+    
+    if (!existingBooking) {
+      return undefined;
+    }
+    
+    const previousStatus = existingBooking.status;
+    
+    // Only update if the status is actually changing
+    if (previousStatus === status) {
+      return existingBooking;
+    }
+    
     const [booking] = await db
       .update(bookings)
       .set({ status })
       .where(eq(bookings.id, id))
       .returning();
     
-    return booking || undefined;
+    if (!booking) {
+      return undefined;
+    }
+    
+    try {
+      // Get the complete booking with details to send in the email
+      const bookingWithDetails = await this.enhanceBookingWithDetails(booking);
+      
+      // Send booking status update email
+      await sendBookingStatusUpdateEmail(bookingWithDetails, previousStatus);
+      console.log(`Booking status update email sent for booking ID: ${booking.id} (${previousStatus} -> ${status})`);
+      
+      // If status changed to "Paid", also send a payment confirmation email
+      if (status.toLowerCase() === "paid") {
+        await sendPaymentConfirmationEmail(bookingWithDetails);
+        console.log(`Payment confirmation email sent for booking ID: ${booking.id}`);
+      }
+    } catch (error) {
+      console.error(`Failed to send booking status update email for booking ID: ${booking.id}`, error);
+      // We don't throw the error here because we still want to return the booking
+      // even if the email fails to send
+    }
+    
+    return booking;
   }
 
   async updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string }): Promise<Booking | undefined> {
