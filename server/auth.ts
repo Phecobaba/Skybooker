@@ -149,7 +149,7 @@ export function isAdmin(req: Express.Request, res: Express.Response, next: Expre
     return res.status(401).json({ message: "Not authenticated" });
   }
   
-  if (!req.user.isAdmin) {
+  if (!req.user.is_admin) {
     return res.status(403).json({ message: "Not authorized" });
   }
   

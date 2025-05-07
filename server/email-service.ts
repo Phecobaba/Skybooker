@@ -1,30 +1,33 @@
 import nodemailer from 'nodemailer';
 import { Booking, BookingWithDetails, User } from '@shared/schema';
+import { generateReceiptPdf } from './pdf-service';
+import path from 'path';
+import fs from 'fs';
 
 // Create a test account or use environment variables in production
 let transporter: nodemailer.Transporter;
 
 // Initialize the email transporter
 export async function initializeEmailService() {
-  // Check if SendGrid API key is available
-  if (process.env.SENDGRID_API_KEY) {
+  // Check if Mailjet API keys are available
+  if (process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) {
     try {
-      // Setup using SendGrid SMTP relay
+      // Setup using Mailjet SMTP relay
       transporter = nodemailer.createTransport({
-        host: 'smtp.sendgrid.net',
+        host: 'in-v3.mailjet.com',
         port: 587,
         secure: false,
         auth: {
-          user: 'apikey',
-          pass: process.env.SENDGRID_API_KEY
+          user: process.env.MAILJET_API_KEY,
+          pass: process.env.MAILJET_SECRET_KEY
         }
       });
       
-      console.log('Email service initialized with SendGrid');
+      console.log('Email service initialized with Mailjet');
       return transporter;
     } catch (error) {
-      console.error('Failed to initialize SendGrid email service:', error);
-      // Fall back to test account if SendGrid setup fails
+      console.error('Failed to initialize Mailjet email service:', error);
+      // Fall back to test account if Mailjet setup fails
     }
   }
   
@@ -96,7 +99,7 @@ export async function sendBookingConfirmationEmail(booking: BookingWithDetails) 
     console.log(`Booking confirmation email sent: ${info.messageId}`);
     
     // Only log preview URL for test accounts (Ethereal)
-    if (process.env.SENDGRID_API_KEY === undefined && nodemailer.getTestMessageUrl(info)) {
+    if (!(process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) && nodemailer.getTestMessageUrl(info)) {
       console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
     
@@ -150,7 +153,7 @@ export async function sendBookingStatusUpdateEmail(booking: BookingWithDetails, 
     console.log(`Booking status update email sent: ${info.messageId}`);
     
     // Only log preview URL for test accounts (Ethereal)
-    if (process.env.SENDGRID_API_KEY === undefined && nodemailer.getTestMessageUrl(info)) {
+    if (!(process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) && nodemailer.getTestMessageUrl(info)) {
       console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
     
@@ -202,7 +205,7 @@ export async function sendPaymentConfirmationEmail(booking: BookingWithDetails) 
     console.log(`Payment confirmation email sent: ${info.messageId}`);
     
     // Only log preview URL for test accounts (Ethereal)
-    if (process.env.SENDGRID_API_KEY === undefined && nodemailer.getTestMessageUrl(info)) {
+    if (!(process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) && nodemailer.getTestMessageUrl(info)) {
       console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
     
