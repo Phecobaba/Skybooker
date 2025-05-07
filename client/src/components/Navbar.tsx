@@ -39,43 +39,43 @@ export default function Navbar() {
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link href="/">
-                <a
+                <span
                   className={cn(
-                    "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium",
+                    "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer",
                     isActive("/")
                       ? "border-primary text-primary"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   )}
                 >
                   Home
-                </a>
+                </span>
               </Link>
               {user && (
                 <Link href="/my-bookings">
-                  <a
+                  <span
                     className={cn(
-                      "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium",
+                      "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer",
                       isActive("/my-bookings")
                         ? "border-primary text-primary"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     )}
                   >
                     My Bookings
-                  </a>
+                  </span>
                 </Link>
               )}
               {user?.isAdmin && (
                 <Link href="/admin">
-                  <a
+                  <span
                     className={cn(
-                      "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium",
+                      "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer",
                       currentPath.startsWith("/admin")
                         ? "border-primary text-primary"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     )}
                   >
                     Admin Panel
-                  </a>
+                  </span>
                 </Link>
               )}
             </div>
@@ -122,7 +122,7 @@ export default function Navbar() {
               </>
             ) : (
               <Link href="/auth">
-                <Button className="ml-3" variant="primary">
+                <Button className="ml-3" variant="default">
                   Sign In
                 </Button>
               </Link>
@@ -147,43 +147,43 @@ export default function Navbar() {
           <div className="sm:hidden">
             <div className="pt-2 pb-3 space-y-1">
               <Link href="/">
-                <a
+                <span
                   className={cn(
-                    "block pl-3 pr-4 py-2 border-l-4 text-base font-medium",
+                    "block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer",
                     isActive("/")
                       ? "border-primary text-primary bg-primary/5"
                       : "border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                   )}
                 >
                   Home
-                </a>
+                </span>
               </Link>
               {user && (
                 <Link href="/my-bookings">
-                  <a
+                  <span
                     className={cn(
-                      "block pl-3 pr-4 py-2 border-l-4 text-base font-medium",
+                      "block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer",
                       isActive("/my-bookings")
                         ? "border-primary text-primary bg-primary/5"
                         : "border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                     )}
                   >
                     My Bookings
-                  </a>
+                  </span>
                 </Link>
               )}
               {user?.isAdmin && (
                 <Link href="/admin">
-                  <a
+                  <span
                     className={cn(
-                      "block pl-3 pr-4 py-2 border-l-4 text-base font-medium",
+                      "block pl-3 pr-4 py-2 border-l-4 text-base font-medium cursor-pointer",
                       currentPath.startsWith("/admin")
                         ? "border-primary text-primary bg-primary/5"
                         : "border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                     )}
                   >
                     Admin Panel
-                  </a>
+                  </span>
                 </Link>
               )}
             </div>
@@ -221,9 +221,9 @@ export default function Navbar() {
                       Profile
                     </a>
                     <Link href="/my-bookings">
-                      <a className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                      <span className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 cursor-pointer">
                         My Bookings
-                      </a>
+                      </span>
                     </Link>
                     <button
                       onClick={handleLogout}
