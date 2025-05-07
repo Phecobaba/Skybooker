@@ -173,6 +173,16 @@ export async function sendPaymentConfirmationEmail(booking: BookingWithDetails) 
   try {
     const { flight } = booking;
     
+    // Generate PDF receipt
+    const pdfPath = await generateReceiptPdf(booking);
+    const absolutePdfPath = path.join(process.cwd(), pdfPath.replace(/^\//, ''));
+    
+    // Save receipt path to booking if needed
+    if (!booking.receiptPath) {
+      // This could be saved to the database, but we'll keep it simple for now
+      console.log(`Generated receipt PDF: ${pdfPath}`);
+    }
+    
     const mailOptions = {
       from: '"SkyBooker Payments" <payments@skybooker.com>',
       to: booking.passengerEmail,
@@ -193,16 +203,24 @@ export async function sendPaymentConfirmationEmail(booking: BookingWithDetails) 
           </div>
           
           <p>Your booking is now confirmed and ready for travel.</p>
+          <p>We've attached a PDF receipt to this email for your records. You can also download it anytime from your account dashboard.</p>
           <p>Thank you for choosing SkyBooker for your travel needs.</p>
           
           <p>Best regards,</p>
           <p>The SkyBooker Payments Team</p>
         </div>
-      `
+      `,
+      attachments: [
+        {
+          filename: `SkyBooker_Receipt_${booking.id}.pdf`,
+          path: absolutePdfPath,
+          contentType: 'application/pdf'
+        }
+      ]
     };
     
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Payment confirmation email sent: ${info.messageId}`);
+    console.log(`Payment confirmation email with receipt sent: ${info.messageId}`);
     
     // Only log preview URL for test accounts (Ethereal)
     if (!(process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) && nodemailer.getTestMessageUrl(info)) {

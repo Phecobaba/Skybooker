@@ -389,7 +389,7 @@ export class DatabaseStorage implements IStorage {
     return booking;
   }
 
-  async updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string }): Promise<Booking | undefined> {
+  async updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string, receiptPath?: string }): Promise<Booking | undefined> {
     const [booking] = await db
       .update(bookings)
       .set(payment)
@@ -408,6 +408,16 @@ export class DatabaseStorage implements IStorage {
     }
     
     return booking;
+  }
+  
+  async updateBookingReceipt(id: number, receiptPath: string): Promise<Booking | undefined> {
+    const [booking] = await db
+      .update(bookings)
+      .set({ receiptPath })
+      .where(eq(bookings.id, id))
+      .returning();
+    
+    return booking || undefined;
   }
 
   // Payment Account methods

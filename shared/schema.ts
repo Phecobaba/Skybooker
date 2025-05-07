@@ -42,6 +42,7 @@ export const bookings = pgTable("bookings", {
   status: text("status").notNull().default("Pending"),
   paymentReference: text("payment_reference"),
   paymentProof: text("payment_proof"),
+  receiptPath: text("receipt_path"),
 });
 
 export const paymentAccounts = pgTable("payment_accounts", {

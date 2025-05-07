@@ -49,7 +49,8 @@ export interface IStorage {
   getBookingsByUserId(userId: number): Promise<BookingWithDetails[]>;
   createBooking(booking: InsertBooking): Promise<Booking>;
   updateBookingStatus(id: number, status: string): Promise<Booking | undefined>;
-  updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string }): Promise<Booking | undefined>;
+  updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string, receiptPath?: string }): Promise<Booking | undefined>;
+  updateBookingReceipt(id: number, receiptPath: string): Promise<Booking | undefined>;
 
   // Payment Accounts
   getPaymentAccounts(): Promise<PaymentAccount[]>;
@@ -468,7 +469,7 @@ export class MemStorage implements IStorage {
     return updatedBooking;
   }
 
-  async updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string }): Promise<Booking | undefined> {
+  async updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string, receiptPath?: string }): Promise<Booking | undefined> {
     const booking = this.bookings.get(id);
     if (!booking) {
       return undefined;
@@ -477,7 +478,23 @@ export class MemStorage implements IStorage {
     const updatedBooking: Booking = {
       ...booking,
       paymentReference: payment.paymentReference ?? booking.paymentReference,
-      paymentProof: payment.paymentProof ?? booking.paymentProof
+      paymentProof: payment.paymentProof ?? booking.paymentProof,
+      receiptPath: payment.receiptPath ?? booking.receiptPath
+    };
+    
+    this.bookings.set(id, updatedBooking);
+    return updatedBooking;
+  }
+  
+  async updateBookingReceipt(id: number, receiptPath: string): Promise<Booking | undefined> {
+    const booking = this.bookings.get(id);
+    if (!booking) {
+      return undefined;
+    }
+    
+    const updatedBooking: Booking = {
+      ...booking,
+      receiptPath
     };
     
     this.bookings.set(id, updatedBooking);
