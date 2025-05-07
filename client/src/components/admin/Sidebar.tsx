@@ -259,9 +259,9 @@ export default function AdminSidebar() {
               const isActive = location === link.href;
               return (
                 <Link key={link.href} href={link.href}>
-                  <a
+                  <span
                     className={cn(
-                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
+                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer",
                       isActive
                         ? "sidebar-link-active"
                         : "text-white hover:bg-primary-700"
@@ -269,7 +269,7 @@ export default function AdminSidebar() {
                   >
                     <span className="mr-3 text-lg">{link.icon}</span>
                     {!isCollapsed && <span>{link.label}</span>}
-                  </a>
+                  </span>
                 </Link>
               );
             })}

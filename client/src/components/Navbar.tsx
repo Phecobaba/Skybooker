@@ -236,9 +236,9 @@ export default function Navbar() {
               ) : (
                 <div className="mt-3 space-y-1">
                   <Link href="/auth">
-                    <a className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                    <span className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 cursor-pointer">
                       Sign In
-                    </a>
+                    </span>
                   </Link>
                 </div>
               )}
