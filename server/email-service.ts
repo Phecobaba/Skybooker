@@ -6,27 +6,53 @@ let transporter: nodemailer.Transporter;
 
 // Initialize the email transporter
 export async function initializeEmailService() {
-  // For testing, we'll use ethereal email (a fake SMTP service)
-  // In production, this would be replaced with actual SMTP configuration
-  const testAccount = await nodemailer.createTestAccount();
-  
-  // Create a transporter object
-  transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass
+  // Check if SendGrid API key is available
+  if (process.env.SENDGRID_API_KEY) {
+    try {
+      // Setup using SendGrid SMTP relay
+      transporter = nodemailer.createTransport({
+        host: 'smtp.sendgrid.net',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'apikey',
+          pass: process.env.SENDGRID_API_KEY
+        }
+      });
+      
+      console.log('Email service initialized with SendGrid');
+      return transporter;
+    } catch (error) {
+      console.error('Failed to initialize SendGrid email service:', error);
+      // Fall back to test account if SendGrid setup fails
     }
-  });
+  }
   
-  console.log('Email service initialized with test account');
-  console.log(`Test email account: ${testAccount.user}`);
-  console.log(`Preview URL: https://ethereal.email/login`);
-  console.log(`(Use the test email and password to login and view sent emails)`);
-  
-  return transporter;
+  // For testing, we'll use ethereal email (a fake SMTP service)
+  try {
+    const testAccount = await nodemailer.createTestAccount();
+    
+    // Create a transporter object
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    });
+    
+    console.log('Email service initialized with test account');
+    console.log(`Test email account: ${testAccount.user}`);
+    console.log(`Preview URL: https://ethereal.email/login`);
+    console.log(`(Use the test email and password to login and view sent emails)`);
+    
+    return transporter;
+  } catch (error) {
+    console.error('Failed to initialize test email service:', error);
+    throw error;
+  }
 }
 
 // Function to send booking confirmation email
@@ -68,7 +94,11 @@ export async function sendBookingConfirmationEmail(booking: BookingWithDetails) 
     
     const info = await transporter.sendMail(mailOptions);
     console.log(`Booking confirmation email sent: ${info.messageId}`);
-    console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    
+    // Only log preview URL for test accounts (Ethereal)
+    if (process.env.SENDGRID_API_KEY === undefined && nodemailer.getTestMessageUrl(info)) {
+      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    }
     
     return info;
   } catch (error) {
@@ -118,7 +148,11 @@ export async function sendBookingStatusUpdateEmail(booking: BookingWithDetails, 
     
     const info = await transporter.sendMail(mailOptions);
     console.log(`Booking status update email sent: ${info.messageId}`);
-    console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    
+    // Only log preview URL for test accounts (Ethereal)
+    if (process.env.SENDGRID_API_KEY === undefined && nodemailer.getTestMessageUrl(info)) {
+      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    }
     
     return info;
   } catch (error) {
@@ -166,7 +200,11 @@ export async function sendPaymentConfirmationEmail(booking: BookingWithDetails) 
     
     const info = await transporter.sendMail(mailOptions);
     console.log(`Payment confirmation email sent: ${info.messageId}`);
-    console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    
+    // Only log preview URL for test accounts (Ethereal)
+    if (process.env.SENDGRID_API_KEY === undefined && nodemailer.getTestMessageUrl(info)) {
+      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    }
     
     return info;
   } catch (error) {

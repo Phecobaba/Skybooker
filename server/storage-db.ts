@@ -396,7 +396,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bookings.id, id))
       .returning();
     
-    return booking || undefined;
+    if (!booking) {
+      return undefined;
+    }
+    
+    // If payment details are updated and booking status is still "Pending"
+    // automatically update status to "Pending Payment"
+    if (booking.status.toLowerCase() === "pending" && 
+        (payment.paymentReference || payment.paymentProof)) {
+      return this.updateBookingStatus(id, "Pending Payment");
+    }
+    
+    return booking;
   }
 
   // Payment Account methods
