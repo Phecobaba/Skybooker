@@ -35,7 +35,7 @@ const searchSchema = z.object({
   tripType: z.enum(["roundTrip", "oneWay"]),
   origin: z.string().min(1, "Origin is required"),
   destination: z.string().min(1, "Destination is required").refine(
-    (val, ctx) => val !== ctx.data.origin,
+    (val: string, ctx: { data: { origin: string } }) => val !== ctx.data.origin,
     "Origin and destination cannot be the same"
   ),
   departureDate: z.date({
