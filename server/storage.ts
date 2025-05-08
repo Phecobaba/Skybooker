@@ -24,6 +24,8 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
   getAllUsers(): Promise<User[]>;
 
   // Locations
@@ -248,6 +250,41 @@ export class MemStorage implements IStorage {
     };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) {
+      return undefined;
+    }
+    
+    const updatedUser: User = { 
+      ...existingUser,
+      ...userData,
+      id // Ensure the ID stays the same
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const exists = this.users.has(id);
+    
+    if (exists) {
+      // Check if user has bookings
+      const hasBookings = Array.from(this.bookings.values()).some(
+        (booking) => booking.userId === id
+      );
+      
+      if (hasBookings) {
+        throw new Error("Cannot delete user with associated bookings");
+      }
+      
+      this.users.delete(id);
+    }
+    
+    return exists;
   }
 
   async getAllUsers(): Promise<User[]> {
