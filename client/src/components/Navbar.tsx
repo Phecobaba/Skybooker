@@ -19,16 +19,22 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: logoSetting } = useQuery({
-    queryKey: ["/api/site-settings", "logo"],
+    queryKey: ["/api/site-settings/logo"],
     queryFn: async ({ signal }) => {
-      const res = await fetch("/api/site-settings/logo", { signal });
-      if (!res.ok) {
-        if (res.status === 404) {
+      try {
+        const res = await fetch("/api/site-settings/logo", { signal });
+        if (!res.ok) {
+          if (res.status === 404) {
+            return null;
+          }
+          console.error("Error fetching logo setting:", await res.text());
           return null;
         }
-        throw new Error("Failed to fetch logo setting");
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching logo setting:", error);
+        return null;
       }
-      return await res.json();
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

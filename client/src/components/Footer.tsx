@@ -6,14 +6,20 @@ export default function Footer() {
   const { data: logoSetting } = useQuery({
     queryKey: ["/api/site-settings/logo"],
     queryFn: async ({ signal }) => {
-      const res = await fetch("/api/site-settings/logo", { signal });
-      if (!res.ok) {
-        if (res.status === 404) {
+      try {
+        const res = await fetch("/api/site-settings/logo", { signal });
+        if (!res.ok) {
+          if (res.status === 404) {
+            return null;
+          }
+          console.error("Error fetching logo setting:", await res.text());
           return null;
         }
-        throw new Error("Failed to fetch logo setting");
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching logo setting:", error);
+        return null;
       }
-      return await res.json();
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -21,14 +27,20 @@ export default function Footer() {
   const { data: addressSetting } = useQuery({
     queryKey: ["/api/site-settings/address"],
     queryFn: async ({ signal }) => {
-      const res = await fetch("/api/site-settings/address", { signal });
-      if (!res.ok) {
-        if (res.status === 404) {
+      try {
+        const res = await fetch("/api/site-settings/address", { signal });
+        if (!res.ok) {
+          if (res.status === 404) {
+            return null;
+          }
+          console.error("Error fetching address setting:", await res.text());
           return null;
         }
-        throw new Error("Failed to fetch address setting");
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching address setting:", error);
+        return null;
       }
-      return await res.json();
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -36,14 +48,20 @@ export default function Footer() {
   const { data: phoneSetting } = useQuery({
     queryKey: ["/api/site-settings/phone"],
     queryFn: async ({ signal }) => {
-      const res = await fetch("/api/site-settings/phone", { signal });
-      if (!res.ok) {
-        if (res.status === 404) {
+      try {
+        const res = await fetch("/api/site-settings/phone", { signal });
+        if (!res.ok) {
+          if (res.status === 404) {
+            return null;
+          }
+          console.error("Error fetching phone setting:", await res.text());
           return null;
         }
-        throw new Error("Failed to fetch phone setting");
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching phone setting:", error);
+        return null;
       }
-      return await res.json();
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -51,14 +69,20 @@ export default function Footer() {
   const { data: emailSetting } = useQuery({
     queryKey: ["/api/site-settings/email"],
     queryFn: async ({ signal }) => {
-      const res = await fetch("/api/site-settings/email", { signal });
-      if (!res.ok) {
-        if (res.status === 404) {
+      try {
+        const res = await fetch("/api/site-settings/email", { signal });
+        if (!res.ok) {
+          if (res.status === 404) {
+            return null;
+          }
+          console.error("Error fetching email setting:", await res.text());
           return null;
         }
-        throw new Error("Failed to fetch email setting");
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching email setting:", error);
+        return null;
       }
-      return await res.json();
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
