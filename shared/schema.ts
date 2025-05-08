@@ -56,6 +56,8 @@ export const paymentAccounts = pgTable("payment_accounts", {
   mobileNumber: text("mobile_number"),
   bankEnabled: boolean("bank_enabled").default(true),
   mobileEnabled: boolean("mobile_enabled").default(true),
+  taxRate: doublePrecision("tax_rate").default(0.13),
+  serviceFeeRate: doublePrecision("service_fee_rate").default(0.04),
 });
 
 // Insert Schemas

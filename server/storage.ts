@@ -547,7 +547,9 @@ export class MemStorage implements IStorage {
       mobileProvider: account.mobileProvider ?? null,
       mobileNumber: account.mobileNumber ?? null,
       bankEnabled: account.bankEnabled === undefined ? true : account.bankEnabled,
-      mobileEnabled: account.mobileEnabled === undefined ? true : account.mobileEnabled
+      mobileEnabled: account.mobileEnabled === undefined ? true : account.mobileEnabled,
+      taxRate: account.taxRate === undefined ? 0.13 : account.taxRate,
+      serviceFeeRate: account.serviceFeeRate === undefined ? 0.04 : account.serviceFeeRate
     };
     this.paymentAccounts.set(id, updatedAccount);
     

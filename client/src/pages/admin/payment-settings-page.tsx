@@ -64,6 +64,8 @@ export default function AdminPaymentSettingsPage() {
       mobileNumber: "",
       bankEnabled: true,
       mobileEnabled: true,
+      taxRate: 0.13,
+      serviceFeeRate: 0.04,
     },
     mode: "onChange",
   });
@@ -81,6 +83,8 @@ export default function AdminPaymentSettingsPage() {
         mobileNumber: account.mobileNumber || "",
         bankEnabled: account.bankEnabled === false ? false : true,
         mobileEnabled: account.mobileEnabled === false ? false : true,
+        taxRate: account.taxRate || 0.13, // Default to 13% if not set
+        serviceFeeRate: account.serviceFeeRate || 0.04, // Default to 4% if not set
       });
     }
   }, [accounts, form]); // Depend on the accounts array instead of just account
@@ -217,9 +221,10 @@ export default function AdminPaymentSettingsPage() {
                             </div>
                             
                             <Tabs value={activeTab} onValueChange={setActiveTab}>
-                              <TabsList className="grid w-full grid-cols-2 mb-6">
+                              <TabsList className="grid w-full grid-cols-3 mb-6">
                                 <TabsTrigger value="bank">Bank Transfer</TabsTrigger>
                                 <TabsTrigger value="mobile">Mobile Money</TabsTrigger>
+                                <TabsTrigger value="fees">Fees & Taxes</TabsTrigger>
                               </TabsList>
                               
                               <TabsContent value="bank" className="space-y-4">
@@ -326,6 +331,84 @@ export default function AdminPaymentSettingsPage() {
                                     </FormItem>
                                   )}
                                 />
+                              </TabsContent>
+
+                              <TabsContent value="fees" className="space-y-4">
+                                <div className="px-4 py-3 bg-blue-50 border border-blue-200 rounded-md mb-6">
+                                  <p className="text-blue-800 text-sm">
+                                    These rates are applied to all bookings. The tax rate and service fee are calculated as a percentage of the base flight price.
+                                  </p>
+                                </div>
+
+                                <FormField
+                                  control={form.control}
+                                  name="taxRate"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Tax Rate (%)</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          type="number" 
+                                          step="0.01" 
+                                          min="0" 
+                                          max="100" 
+                                          placeholder="e.g. 13" 
+                                          {...field}
+                                          value={field.value !== undefined ? field.value * 100 : ""}
+                                          onChange={(e) => {
+                                            const value = parseFloat(e.target.value);
+                                            field.onChange(isNaN(value) ? 0 : value / 100);
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormDescription>
+                                        The tax rate as a percentage (e.g., 13 for 13% tax rate)
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name="serviceFeeRate"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Service Fee Rate (%)</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          type="number" 
+                                          step="0.01" 
+                                          min="0" 
+                                          max="100" 
+                                          placeholder="e.g. 4" 
+                                          {...field}
+                                          value={field.value !== undefined ? field.value * 100 : ""}
+                                          onChange={(e) => {
+                                            const value = parseFloat(e.target.value);
+                                            field.onChange(isNaN(value) ? 0 : value / 100);
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormDescription>
+                                        The service fee rate as a percentage (e.g., 4 for 4% service fee)
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <div className="mt-6 p-4 border rounded-md bg-gray-50">
+                                  <h4 className="font-medium mb-3">Example Calculation</h4>
+                                  <div className="space-y-2">
+                                    <p><strong>Base Flight Price:</strong> $100.00</p>
+                                    <p><strong>Tax ({(form.watch("taxRate") * 100).toFixed(1)}%):</strong> ${(100 * (form.watch("taxRate") || 0)).toFixed(2)}</p>
+                                    <p><strong>Service Fee ({(form.watch("serviceFeeRate") * 100).toFixed(1)}%):</strong> ${(100 * (form.watch("serviceFeeRate") || 0)).toFixed(2)}</p>
+                                    <div className="border-t pt-2 mt-2">
+                                      <p><strong>Total Price:</strong> ${(100 + (100 * (form.watch("taxRate") || 0)) + (100 * (form.watch("serviceFeeRate") || 0))).toFixed(2)}</p>
+                                    </div>
+                                  </div>
+                                </div>
                               </TabsContent>
                             </Tabs>
 
