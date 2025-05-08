@@ -2,9 +2,18 @@ import PDFDocument from 'pdfkit';
 import { BookingWithDetails } from '@shared/schema';
 import fs from 'fs';
 import path from 'path';
+import { storage } from './storage';
 
 // Generate receipt PDF for a booking
 export async function generateReceiptPdf(booking: BookingWithDetails): Promise<string> {
+  // Get payment accounts for tax and fee rates
+  const paymentAccounts = await storage.getPaymentAccounts();
+  const paymentAccount = paymentAccounts.length > 0 ? paymentAccounts[0] : null;
+  
+  // Use dynamic rates from payment account settings, or fall back to defaults
+  const taxRate = paymentAccount?.taxRate ?? 0.13; // Default to 13% if not set
+  const serviceFeeRate = paymentAccount?.serviceFeeRate ?? 0.04; // Default to 4% if not set
+  
   return new Promise((resolve, reject) => {
     try {
       // Ensure the receipts directory exists
@@ -104,13 +113,19 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
         .text('Payment Reference:', { continued: true, indent: 10 })
         .text(`  ${booking.paymentReference || 'N/A'}`, { align: 'right' });
       
+      const taxesAndFees = flight.price * taxRate;
+      const serviceFee = flight.price * serviceFeeRate;
+      const totalAmount = flight.price + taxesAndFees + serviceFee;
+      
       // Price breakdown
       doc.moveDown()
         .fontSize(10)
         .text('Base Fare:', { continued: true, indent: 10 })
-        .text(`  $${(flight.price * 0.85).toFixed(2)}`, { align: 'right' })
+        .text(`  $${flight.price.toFixed(2)}`, { align: 'right' })
         .text('Taxes & Fees:', { continued: true, indent: 10 })
-        .text(`  $${(flight.price * 0.15).toFixed(2)}`, { align: 'right' });
+        .text(`  $${taxesAndFees.toFixed(2)}`, { align: 'right' })
+        .text('Service Fee:', { continued: true, indent: 10 })
+        .text(`  $${serviceFee.toFixed(2)}`, { align: 'right' });
       
       // Draw a line before total
       doc
@@ -124,7 +139,7 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
         .moveDown(0.5)
         .fontSize(12)
         .text('Total Amount:', { continued: true, indent: 10, bold: true })
-        .text(`  $${flight.price.toFixed(2)}`, { align: 'right', bold: true });
+        .text(`  $${totalAmount.toFixed(2)}`, { align: 'right', bold: true });
       
       // Footer
       doc

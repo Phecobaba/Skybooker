@@ -1,10 +1,10 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { format, formatDistanceStrict } from "date-fns";
 import { Plane, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { FlightWithLocations } from "@shared/schema";
+import { FlightWithLocations, PaymentAccount } from "@shared/schema";
 
 interface FlightCardProps {
   flight: FlightWithLocations;
@@ -13,6 +13,36 @@ interface FlightCardProps {
 
 const FlightCard: FC<FlightCardProps> = ({ flight, highlighted = false }) => {
   const { departureTime, arrivalTime, price, origin, destination } = flight;
+  const [paymentAccount, setPaymentAccount] = useState<PaymentAccount | null>(null);
+  const [totalPrice, setTotalPrice] = useState<number>(price);
+
+  // Fetch payment account settings on component mount
+  useEffect(() => {
+    fetch('/api/payment-accounts')
+      .then(res => res.json())
+      .then(accounts => {
+        if (accounts && accounts.length > 0) {
+          setPaymentAccount(accounts[0]);
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching payment account:", err);
+      });
+  }, []);
+  
+  // Calculate total price with dynamic rates when payment account changes
+  useEffect(() => {
+    if (paymentAccount) {
+      const taxRate = paymentAccount.taxRate ?? 0.13; // Default to 13% if not set
+      const serviceFeeRate = paymentAccount.serviceFeeRate ?? 0.04; // Default to 4% if not set
+      
+      const taxesAndFees = price * taxRate;
+      const serviceFee = price * serviceFeeRate;
+      const calculatedTotal = price + taxesAndFees + serviceFee;
+      
+      setTotalPrice(calculatedTotal);
+    }
+  }, [paymentAccount, price]);
   
   // Calculate flight duration
   const duration = formatDistanceStrict(
@@ -74,9 +104,14 @@ const FlightCard: FC<FlightCardProps> = ({ flight, highlighted = false }) => {
             "text-xl font-bold",
             highlighted ? "text-orange-500" : "text-primary"
           )}>
-            ${price.toFixed(2)}
+            ${totalPrice.toFixed(2)}
           </div>
-          <div className="text-gray-500 text-sm">per person</div>
+          <div className="text-gray-500 text-sm">
+            total price
+          </div>
+          <div className="text-xs text-gray-400">
+            base fare: ${price.toFixed(2)}
+          </div>
           <Link href={`/booking/${flight.id}`}>
             <Button 
               className="mt-2 bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"

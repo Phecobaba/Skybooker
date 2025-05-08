@@ -158,9 +158,9 @@ export default function PaymentPage() {
     navigate(`/booking/${booking?.flightId}`);
   };
 
-  const calculateTotalPrice = (basePrice: number): number => {
-    const taxesAndFees = basePrice * 0.13; // 13% for taxes & fees
-    const serviceFee = basePrice * 0.04; // 4% service fee
+  const calculateTotalPrice = (basePrice: number, taxRate: number, serviceFeeRate: number): number => {
+    const taxesAndFees = basePrice * taxRate;
+    const serviceFee = basePrice * serviceFeeRate;
     return basePrice + taxesAndFees + serviceFee;
   };
 
@@ -185,12 +185,16 @@ export default function PaymentPage() {
     );
   }
 
-  const totalPrice = calculateTotalPrice(booking.flight.price);
-  const taxesAndFees = booking.flight.price * 0.13;
-  const serviceFee = booking.flight.price * 0.04;
-  
   // Get the first payment account
   const paymentAccount = paymentAccounts.length > 0 ? paymentAccounts[0] : null;
+  
+  // Use dynamic rates from payment account settings, or fall back to defaults
+  const taxRate = paymentAccount?.taxRate ?? 0.13; // Default to 13% if not set
+  const serviceFeeRate = paymentAccount?.serviceFeeRate ?? 0.04; // Default to 4% if not set
+  
+  const totalPrice = calculateTotalPrice(booking.flight.price, taxRate, serviceFeeRate);
+  const taxesAndFees = booking.flight.price * taxRate;
+  const serviceFee = booking.flight.price * serviceFeeRate;
   
   // Check if any payment methods are enabled
   const hasBankEnabled = paymentAccount?.bankEnabled ?? false;
