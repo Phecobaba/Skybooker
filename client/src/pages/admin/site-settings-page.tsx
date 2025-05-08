@@ -40,7 +40,7 @@ export default function SiteSettingsPage() {
   const [uploadLoading, setUploadLoading] = useState(false);
 
   // Fetch all site settings
-  const { data: siteSettings, isLoading: settingsLoading } = useQuery({
+  const { data: siteSettings = [], isLoading: settingsLoading } = useQuery({
     queryKey: ["/api/site-settings"],
     queryFn: async () => {
       try {
@@ -353,12 +353,12 @@ export default function SiteSettingsPage() {
                       </Button>
 
                       {/* Display current logo if exists */}
-                      {siteSettings?.find((s: SiteSetting) => s.key === 'logo')?.value && (
+                      {Array.isArray(siteSettings) && siteSettings.some((s: SiteSetting) => s.key === 'logo' && s.value) && (
                         <div className="mt-8 border rounded-md p-4">
                           <h3 className="text-sm font-medium mb-2">Current Logo</h3>
                           <div className="bg-muted/30 p-4 rounded flex justify-center">
                             <img
-                              src={siteSettings.find((s: SiteSetting) => s.key === 'logo').value || ''}
+                              src={siteSettings.find((s: SiteSetting) => s.key === 'logo')?.value || ''}
                               alt="Current Logo"
                               className="h-12 object-contain"
                             />

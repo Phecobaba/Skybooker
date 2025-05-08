@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function Footer() {
   // Fetch all site settings at once
-  const { data: siteSettings } = useQuery({
+  const { data: siteSettings = [] } = useQuery({
     queryKey: ["/api/site-settings"],
     queryFn: async ({ signal }) => {
       try {
@@ -24,7 +24,7 @@ export default function Footer() {
   
   // Helper function to get setting value by key
   const getSettingValue = (key: string, defaultValue: string = ""): string => {
-    if (!siteSettings) return defaultValue;
+    if (!siteSettings || !Array.isArray(siteSettings)) return defaultValue;
     const setting = siteSettings.find((s: any) => s.key === key);
     return setting?.value || defaultValue;
   };
