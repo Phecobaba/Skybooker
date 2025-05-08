@@ -348,21 +348,35 @@ export default function AdminPaymentSettingsPage() {
                                       <FormLabel>Tax Rate (%)</FormLabel>
                                       <FormControl>
                                         <Input 
-                                          type="number" 
-                                          step="0.01" 
-                                          min="0" 
-                                          max="100" 
+                                          type="text" 
+                                          inputMode="decimal" 
                                           placeholder="e.g. 13" 
                                           // Don't spread all field props to avoid value conflicts
                                           name={field.name}
-                                          onBlur={field.onBlur}
+                                          onBlur={(e) => {
+                                            // On blur, if field is empty, set to 0
+                                            if (e.target.value.trim() === "") {
+                                              field.onChange(0);
+                                            }
+                                            field.onBlur();
+                                          }}
                                           ref={field.ref}
                                           // Display the percentage value (e.g., 13 instead of 0.13)
-                                          value={field.value !== undefined && field.value !== null ? (field.value * 100).toFixed(2) : ""}
+                                          // Only format when there's a value
+                                          value={field.value !== undefined && field.value !== null && field.value !== 0 
+                                            ? (field.value * 100) 
+                                            : ""}
                                           onChange={(e) => {
-                                            const inputValue = e.target.value.trim();
+                                            const inputValue = e.target.value;
+                                            
+                                            // Allow empty field
                                             if (inputValue === "") {
-                                              field.onChange(0);
+                                              field.onChange("");
+                                              return;
+                                            }
+                                            
+                                            // Allow only numbers and decimal points
+                                            if (!/^[0-9]*\.?[0-9]*$/.test(inputValue)) {
                                               return;
                                             }
                                             
@@ -370,6 +384,9 @@ export default function AdminPaymentSettingsPage() {
                                             if (!isNaN(value)) {
                                               // Convert percentage to decimal (e.g., 13 -> 0.13)
                                               field.onChange(value / 100);
+                                            } else {
+                                              // If not a valid number yet (like if just "." was entered)
+                                              field.onChange(inputValue);
                                             }
                                           }}
                                         />
@@ -390,21 +407,35 @@ export default function AdminPaymentSettingsPage() {
                                       <FormLabel>Service Fee Rate (%)</FormLabel>
                                       <FormControl>
                                         <Input 
-                                          type="number" 
-                                          step="0.01" 
-                                          min="0" 
-                                          max="100" 
+                                          type="text" 
+                                          inputMode="decimal" 
                                           placeholder="e.g. 4" 
                                           // Don't spread all field props to avoid value conflicts
                                           name={field.name}
-                                          onBlur={field.onBlur}
+                                          onBlur={(e) => {
+                                            // On blur, if field is empty, set to 0
+                                            if (e.target.value.trim() === "") {
+                                              field.onChange(0);
+                                            }
+                                            field.onBlur();
+                                          }}
                                           ref={field.ref}
                                           // Display the percentage value (e.g., 4 instead of 0.04)
-                                          value={field.value !== undefined && field.value !== null ? (field.value * 100).toFixed(2) : ""}
+                                          // Only format when there's a value
+                                          value={field.value !== undefined && field.value !== null && field.value !== 0 
+                                            ? (field.value * 100) 
+                                            : ""}
                                           onChange={(e) => {
-                                            const inputValue = e.target.value.trim();
+                                            const inputValue = e.target.value;
+                                            
+                                            // Allow empty field
                                             if (inputValue === "") {
-                                              field.onChange(0);
+                                              field.onChange("");
+                                              return;
+                                            }
+                                            
+                                            // Allow only numbers and decimal points
+                                            if (!/^[0-9]*\.?[0-9]*$/.test(inputValue)) {
                                               return;
                                             }
                                             
@@ -412,6 +443,9 @@ export default function AdminPaymentSettingsPage() {
                                             if (!isNaN(value)) {
                                               // Convert percentage to decimal (e.g., 4 -> 0.04)
                                               field.onChange(value / 100);
+                                            } else {
+                                              // If not a valid number yet (like if just "." was entered)
+                                              field.onChange(inputValue);
                                             }
                                           }}
                                         />
@@ -428,10 +462,53 @@ export default function AdminPaymentSettingsPage() {
                                   <h4 className="font-medium mb-3">Example Calculation</h4>
                                   <div className="space-y-2">
                                     <p><strong>Base Flight Price:</strong> $100.00</p>
-                                    <p><strong>Tax ({(form.watch("taxRate") * 100).toFixed(1)}%):</strong> ${(100 * (form.watch("taxRate") || 0)).toFixed(2)}</p>
-                                    <p><strong>Service Fee ({(form.watch("serviceFeeRate") * 100).toFixed(1)}%):</strong> ${(100 * (form.watch("serviceFeeRate") || 0)).toFixed(2)}</p>
+                                    {/* Get percentage display value for tax rate */}
+                                    {(() => {
+                                      const taxRate = form.watch("taxRate");
+                                      // Handle when taxRate is a string (during editing)
+                                      const numericTaxRate = typeof taxRate === 'string' ? 0 : taxRate || 0;
+                                      const taxAmount = 100 * numericTaxRate;
+                                      const percentDisplay = typeof taxRate === 'number' ? 
+                                        (numericTaxRate * 100).toFixed(1) : '0.0';
+                                      
+                                      return (
+                                        <p>
+                                          <strong>Tax ({percentDisplay}%):</strong> ${taxAmount.toFixed(2)}
+                                        </p>
+                                      );
+                                    })()}
+                                    
+                                    {/* Get percentage display value for service fee rate */}
+                                    {(() => {
+                                      const feeRate = form.watch("serviceFeeRate");
+                                      // Handle when feeRate is a string (during editing)
+                                      const numericFeeRate = typeof feeRate === 'string' ? 0 : feeRate || 0;
+                                      const feeAmount = 100 * numericFeeRate;
+                                      const percentDisplay = typeof feeRate === 'number' ? 
+                                        (numericFeeRate * 100).toFixed(1) : '0.0';
+                                      
+                                      return (
+                                        <p>
+                                          <strong>Service Fee ({percentDisplay}%):</strong> ${feeAmount.toFixed(2)}
+                                        </p>
+                                      );
+                                    })()}
+                                    
                                     <div className="border-t pt-2 mt-2">
-                                      <p><strong>Total Price:</strong> ${(100 + (100 * (form.watch("taxRate") || 0)) + (100 * (form.watch("serviceFeeRate") || 0))).toFixed(2)}</p>
+                                      {(() => {
+                                        const taxRate = form.watch("taxRate");
+                                        const feeRate = form.watch("serviceFeeRate");
+                                        // Handle when rates are strings (during editing)
+                                        const numericTaxRate = typeof taxRate === 'string' ? 0 : taxRate || 0;
+                                        const numericFeeRate = typeof feeRate === 'string' ? 0 : feeRate || 0;
+                                        const totalAmount = 100 + (100 * numericTaxRate) + (100 * numericFeeRate);
+                                        
+                                        return (
+                                          <p>
+                                            <strong>Total Price:</strong> ${totalAmount.toFixed(2)}
+                                          </p>
+                                        );
+                                      })()}
                                     </div>
                                   </div>
                                 </div>
