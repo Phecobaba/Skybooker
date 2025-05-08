@@ -3,98 +3,40 @@ import { Facebook, Twitter, Instagram, Linkedin, MapPin, Phone, Mail } from "luc
 import { useQuery } from "@tanstack/react-query";
 
 export default function Footer() {
-  const { data: logoSetting } = useQuery({
-    queryKey: ["/api/site-settings/logo"],
+  // Fetch all site settings at once
+  const { data: siteSettings } = useQuery({
+    queryKey: ["/api/site-settings"],
     queryFn: async ({ signal }) => {
       try {
-        const res = await fetch("/api/site-settings/logo", { signal });
+        const res = await fetch("/api/site-settings", { signal });
         if (!res.ok) {
-          if (res.status === 404) {
-            return null;
-          }
-          console.error("Error fetching logo setting:", await res.text());
-          return null;
+          console.error("Error fetching site settings:", await res.text());
+          return [];
         }
         return await res.json();
       } catch (error) {
-        console.error("Error fetching logo setting:", error);
-        return null;
+        console.error("Error fetching site settings:", error);
+        return [];
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
-  const { data: addressSetting } = useQuery({
-    queryKey: ["/api/site-settings/address"],
-    queryFn: async ({ signal }) => {
-      try {
-        const res = await fetch("/api/site-settings/address", { signal });
-        if (!res.ok) {
-          if (res.status === 404) {
-            return null;
-          }
-          console.error("Error fetching address setting:", await res.text());
-          return null;
-        }
-        return await res.json();
-      } catch (error) {
-        console.error("Error fetching address setting:", error);
-        return null;
-      }
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-  
-  const { data: phoneSetting } = useQuery({
-    queryKey: ["/api/site-settings/phone"],
-    queryFn: async ({ signal }) => {
-      try {
-        const res = await fetch("/api/site-settings/phone", { signal });
-        if (!res.ok) {
-          if (res.status === 404) {
-            return null;
-          }
-          console.error("Error fetching phone setting:", await res.text());
-          return null;
-        }
-        return await res.json();
-      } catch (error) {
-        console.error("Error fetching phone setting:", error);
-        return null;
-      }
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-  
-  const { data: emailSetting } = useQuery({
-    queryKey: ["/api/site-settings/email"],
-    queryFn: async ({ signal }) => {
-      try {
-        const res = await fetch("/api/site-settings/email", { signal });
-        if (!res.ok) {
-          if (res.status === 404) {
-            return null;
-          }
-          console.error("Error fetching email setting:", await res.text());
-          return null;
-        }
-        return await res.json();
-      } catch (error) {
-        console.error("Error fetching email setting:", error);
-        return null;
-      }
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  // Helper function to get setting value by key
+  const getSettingValue = (key: string, defaultValue: string = ""): string => {
+    if (!siteSettings) return defaultValue;
+    const setting = siteSettings.find((s: any) => s.key === key);
+    return setting?.value || defaultValue;
+  };
   return (
     <footer className="bg-gray-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="text-2xl font-bold mb-4">
-              {logoSetting?.value ? (
+              {getSettingValue('logo') ? (
                 <img 
-                  src={logoSetting.value} 
+                  src={getSettingValue('logo')} 
                   alt="SkyBooker Logo" 
                   className="h-8 w-auto"
                 />
@@ -201,15 +143,15 @@ export default function Footer() {
             <ul className="space-y-2 text-gray-300">
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                <span>{addressSetting?.value || "123 Aviation Way, Flight City, FC 10000"}</span>
+                <span>{getSettingValue('address', "123 Aviation Way, Flight City, FC 10000")}</span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span>{phoneSetting?.value || "+1 (555) 123-4567"}</span>
+                <span>{getSettingValue('phone', "+1 (555) 123-4567")}</span>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span>{emailSetting?.value || "support@skybooker.com"}</span>
+                <span>{getSettingValue('email', "support@skybooker.com")}</span>
               </li>
             </ul>
           </div>
