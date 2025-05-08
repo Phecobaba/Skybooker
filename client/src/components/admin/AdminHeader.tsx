@@ -5,9 +5,16 @@ import { Button } from "@/components/ui/button";
 interface AdminHeaderProps {
   title: string;
   description?: string;
+  showBackButton?: boolean;
+  backButtonUrl?: string;
 }
 
-export default function AdminHeader({ title, description }: AdminHeaderProps) {
+export default function AdminHeader({ 
+  title, 
+  description, 
+  showBackButton = true, 
+  backButtonUrl = "/admin" 
+}: AdminHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <div>
@@ -16,19 +23,21 @@ export default function AdminHeader({ title, description }: AdminHeaderProps) {
           <p className="text-muted-foreground mt-1">{description}</p>
         )}
       </div>
-      <div className="flex items-center space-x-2">
-        <Button 
-          variant="outline" 
-          size="sm"
-          asChild
-          className="flex items-center gap-1"
-        >
-          <Link href="/admin">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Dashboard</span>
-          </Link>
-        </Button>
-      </div>
+      {showBackButton && (
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            asChild
+            className="flex items-center gap-1"
+          >
+            <Link href={backButtonUrl}>
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Dashboard</span>
+            </Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

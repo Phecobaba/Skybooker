@@ -114,6 +114,7 @@ export default function AdminDashboardPage() {
                 <AdminHeader 
                   title="Dashboard"
                   description="Overview of your flight booking system"
+                  showBackButton={false}
                 />
               </div>
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">

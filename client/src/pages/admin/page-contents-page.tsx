@@ -250,6 +250,8 @@ export default function PageContentsPage() {
             <AdminHeader 
               title="Page Content Management"
               description="Create and manage pages displayed in the footer section."
+              showBackButton={true}
+              backButtonUrl="/admin"
             />
             
             <div className="flex justify-end mb-6">
