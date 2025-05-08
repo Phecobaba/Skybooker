@@ -33,8 +33,9 @@ export default function AdminDashboardPage() {
     queryKey: ["/api/admin/flights"],
   });
 
-  // Get pending bookings
-  const pendingBookings = bookings.filter(booking => booking.status === "Pending");
+  // Get pending payments (both "Pending" and "Pending Payment" statuses)
+  const pendingBookings = bookings.filter(booking => 
+    booking.status === "Pending" || booking.status === "Pending Payment");
   
   // Get recent bookings (latest 5)
   const recentBookings = [...bookings]
