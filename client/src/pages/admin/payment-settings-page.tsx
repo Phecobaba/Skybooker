@@ -353,11 +353,24 @@ export default function AdminPaymentSettingsPage() {
                                           min="0" 
                                           max="100" 
                                           placeholder="e.g. 13" 
-                                          {...field}
-                                          value={field.value !== undefined ? field.value * 100 : ""}
+                                          // Don't spread all field props to avoid value conflicts
+                                          name={field.name}
+                                          onBlur={field.onBlur}
+                                          ref={field.ref}
+                                          // Display the percentage value (e.g., 13 instead of 0.13)
+                                          value={field.value !== undefined && field.value !== null ? (field.value * 100).toFixed(2) : ""}
                                           onChange={(e) => {
-                                            const value = parseFloat(e.target.value);
-                                            field.onChange(isNaN(value) ? 0 : value / 100);
+                                            const inputValue = e.target.value.trim();
+                                            if (inputValue === "") {
+                                              field.onChange(0);
+                                              return;
+                                            }
+                                            
+                                            const value = parseFloat(inputValue);
+                                            if (!isNaN(value)) {
+                                              // Convert percentage to decimal (e.g., 13 -> 0.13)
+                                              field.onChange(value / 100);
+                                            }
                                           }}
                                         />
                                       </FormControl>
@@ -382,11 +395,24 @@ export default function AdminPaymentSettingsPage() {
                                           min="0" 
                                           max="100" 
                                           placeholder="e.g. 4" 
-                                          {...field}
-                                          value={field.value !== undefined ? field.value * 100 : ""}
+                                          // Don't spread all field props to avoid value conflicts
+                                          name={field.name}
+                                          onBlur={field.onBlur}
+                                          ref={field.ref}
+                                          // Display the percentage value (e.g., 4 instead of 0.04)
+                                          value={field.value !== undefined && field.value !== null ? (field.value * 100).toFixed(2) : ""}
                                           onChange={(e) => {
-                                            const value = parseFloat(e.target.value);
-                                            field.onChange(isNaN(value) ? 0 : value / 100);
+                                            const inputValue = e.target.value.trim();
+                                            if (inputValue === "") {
+                                              field.onChange(0);
+                                              return;
+                                            }
+                                            
+                                            const value = parseFloat(inputValue);
+                                            if (!isNaN(value)) {
+                                              // Convert percentage to decimal (e.g., 4 -> 0.04)
+                                              field.onChange(value / 100);
+                                            }
                                           }}
                                         />
                                       </FormControl>
