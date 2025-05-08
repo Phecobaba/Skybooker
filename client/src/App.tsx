@@ -20,6 +20,7 @@ import AdminUsersPage from "@/pages/admin/users-page";
 import AdminAccountSettingsPage from "@/pages/admin/account-settings-page";
 import AdminSiteSettingsPage from "@/pages/admin/site-settings-page";
 import AdminPageContentsPage from "@/pages/admin/page-contents-page";
+import PageContentPage from "@/pages/page-content";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import SmartSupp from "@/components/SmartSupp";
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/search" component={SearchResultsPage} />
+      <Route path="/page/:slug" component={PageContentPage} />
       <ProtectedRoute path="/booking/:flightId" component={BookingPage} />
       <ProtectedRoute path="/payment/:bookingId" component={PaymentPage} />
       <ProtectedRoute path="/my-bookings" component={MyBookingsPage} />
