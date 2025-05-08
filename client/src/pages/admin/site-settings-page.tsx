@@ -176,179 +176,181 @@ export default function SiteSettingsPage() {
               </p>
             </div>
 
-        <Tabs defaultValue="general">
-          <TabsList className="mb-4">
-            <TabsTrigger value="general">General Settings</TabsTrigger>
-            <TabsTrigger value="logo">Logo</TabsTrigger>
-          </TabsList>
+            <Tabs defaultValue="general">
+              <TabsList className="mb-4">
+                <TabsTrigger value="general">General Settings</TabsTrigger>
+                <TabsTrigger value="logo">Logo</TabsTrigger>
+              </TabsList>
 
-          {/* General Settings Tab */}
-          <TabsContent value="general">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Add/Edit Setting</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="key"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Key</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., address, phone, email" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="value"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Value</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Setting value" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="submit"
-                        className="w-full"
-                        disabled={settingsMutation.isPending}
-                      >
-                        {settingsMutation.isPending && (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        )}
-                        Save Setting
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
+              {/* General Settings Tab */}
+              <TabsContent value="general">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Add/Edit Setting</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="key"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Key</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g., address, phone, email" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="value"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Value</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Setting value" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={settingsMutation.isPending}
+                          >
+                            {settingsMutation.isPending && (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            )}
+                            Save Setting
+                          </Button>
+                        </form>
+                      </Form>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Current Settings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {settingsLoading ? (
-                    <div className="flex justify-center p-8">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                    </div>
-                  ) : !siteSettings || siteSettings.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      No settings found. Add some using the form.
-                    </p>
-                  ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Current Settings</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {settingsLoading ? (
+                        <div className="flex justify-center p-8">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        </div>
+                      ) : !siteSettings || siteSettings.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">
+                          No settings found. Add some using the form.
+                        </p>
+                      ) : (
+                        <div className="space-y-4">
+                          {siteSettings.map((setting: SiteSetting) => (
+                            <div
+                              key={setting.id}
+                              className="flex items-center justify-between p-3 border rounded-md bg-muted/20"
+                            >
+                              <div>
+                                <p className="font-medium">{setting.key}</p>
+                                <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                  {setting.value || "(empty)"}
+                                </p>
+                              </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                                onClick={() => handleDelete(setting.key)}
+                                disabled={deleteMutation.isPending}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              {/* Logo Tab */}
+              <TabsContent value="logo">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Upload Logo</CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     <div className="space-y-4">
-                      {siteSettings.map((setting: SiteSetting) => (
-                        <div
-                          key={setting.id}
-                          className="flex items-center justify-between p-3 border rounded-md bg-muted/20"
-                        >
-                          <div>
-                            <p className="font-medium">{setting.key}</p>
-                            <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                              {setting.value || "(empty)"}
+                      <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-md p-6 bg-muted/20">
+                        {selectedFile ? (
+                          <div className="text-center">
+                            <p className="font-medium">{selectedFile.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {(selectedFile.size / 1024).toFixed(2)} KB
                             </p>
                           </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
-                            onClick={() => handleDelete(setting.key)}
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Logo Tab */}
-          <TabsContent value="logo">
-            <Card>
-              <CardHeader>
-                <CardTitle>Upload Logo</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-md p-6 bg-muted/20">
-                    {selectedFile ? (
-                      <div className="text-center">
-                        <p className="font-medium">{selectedFile.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {(selectedFile.size / 1024).toFixed(2)} KB
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <Upload className="w-10 h-10 text-muted-foreground mb-2 mx-auto" />
-                        <p className="font-medium">Drag and drop or click to upload</p>
-                        <p className="text-sm text-muted-foreground">
-                          Recommended size: 200 x 60 pixels
-                        </p>
-                      </div>
-                    )}
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      id="logo-upload"
-                      onChange={handleFileChange}
-                    />
-                    <label htmlFor="logo-upload">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="mt-4 cursor-pointer"
-                        asChild
-                      >
-                        <span>Choose File</span>
-                      </Button>
-                    </label>
-                  </div>
-
-                  <Button
-                    onClick={uploadLogo}
-                    disabled={!selectedFile || uploadLoading}
-                    className="w-full"
-                  >
-                    {uploadLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Upload Logo
-                  </Button>
-
-                  {/* Display current logo if exists */}
-                  {siteSettings?.find((s: SiteSetting) => s.key === 'logo')?.value && (
-                    <div className="mt-8 border rounded-md p-4">
-                      <h3 className="text-sm font-medium mb-2">Current Logo</h3>
-                      <div className="bg-muted/30 p-4 rounded flex justify-center">
-                        <img
-                          src={siteSettings.find((s: SiteSetting) => s.key === 'logo').value || ''}
-                          alt="Current Logo"
-                          className="h-12 object-contain"
+                        ) : (
+                          <div className="text-center">
+                            <Upload className="w-10 h-10 text-muted-foreground mb-2 mx-auto" />
+                            <p className="font-medium">Drag and drop or click to upload</p>
+                            <p className="text-sm text-muted-foreground">
+                              Recommended size: 200 x 60 pixels
+                            </p>
+                          </div>
+                        )}
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          id="logo-upload"
+                          onChange={handleFileChange}
                         />
+                        <label htmlFor="logo-upload">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="mt-4 cursor-pointer"
+                            asChild
+                          >
+                            <span>Choose File</span>
+                          </Button>
+                        </label>
                       </div>
+
+                      <Button
+                        onClick={uploadLogo}
+                        disabled={!selectedFile || uploadLoading}
+                        className="w-full"
+                      >
+                        {uploadLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        Upload Logo
+                      </Button>
+
+                      {/* Display current logo if exists */}
+                      {siteSettings?.find((s: SiteSetting) => s.key === 'logo')?.value && (
+                        <div className="mt-8 border rounded-md p-4">
+                          <h3 className="text-sm font-medium mb-2">Current Logo</h3>
+                          <div className="bg-muted/30 p-4 rounded flex justify-center">
+                            <img
+                              src={siteSettings.find((s: SiteSetting) => s.key === 'logo').value || ''}
+                              alt="Current Logo"
+                              className="h-12 object-contain"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
