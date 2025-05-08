@@ -19,7 +19,7 @@ import AdminPaymentSettingsPage from "@/pages/admin/payment-settings-page";
 import AdminUsersPage from "@/pages/admin/users-page";
 import AdminAccountSettingsPage from "@/pages/admin/account-settings-page";
 import AdminSiteSettingsPage from "@/pages/admin/site-settings-page";
-import AdminPageContentsPage from "@/pages/admin/page-contents-page";
+import AdminPageContentsPage from "@/pages/admin/page-contents-page-new";
 import PageContentPage from "@/pages/page-content";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";

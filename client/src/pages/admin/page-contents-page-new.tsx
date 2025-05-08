@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Helmet } from "react-helmet";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import AdminSidebar from "@/components/admin/Sidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
 import { Loader2, Plus, PencilIcon, Trash2 } from "lucide-react";
+import {
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -29,11 +35,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import AdminSidebar from "@/components/admin/Sidebar";
-import AdminHeader from "@/components/admin/AdminHeader";
-import { Helmet } from "react-helmet";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 // Define the page content schema
 const pageContentSchema = z.object({
@@ -57,6 +77,7 @@ type FormData = z.infer<typeof pageContentSchema>;
 export default function PageContentsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
   const [editingContent, setEditingContent] = useState<PageContent | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -75,7 +96,37 @@ export default function PageContentsPage() {
     },
   });
 
-  // Create new page content
+  // Form setup
+  const createForm = useForm<FormData>({
+    resolver: zodResolver(pageContentSchema),
+    defaultValues: {
+      slug: "",
+      title: "",
+      content: "",
+    },
+  });
+
+  const editForm = useForm<FormData>({
+    resolver: zodResolver(pageContentSchema),
+    defaultValues: {
+      slug: "",
+      title: "",
+      content: "",
+    },
+  });
+
+  // Update edit form when editing content changes
+  useEffect(() => {
+    if (editingContent) {
+      editForm.reset({
+        slug: editingContent.slug,
+        title: editingContent.title,
+        content: editingContent.content,
+      });
+    }
+  }, [editingContent, editForm]);
+
+  // Mutations
   const createContentMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const res = await apiRequest("POST", "/api/admin/page-contents", data);
@@ -99,7 +150,6 @@ export default function PageContentsPage() {
     },
   });
 
-  // Update page content
   const updateContentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: FormData }) => {
       const res = await apiRequest("PUT", `/api/admin/page-contents/${id}`, data);
@@ -123,7 +173,6 @@ export default function PageContentsPage() {
     },
   });
 
-  // Delete page content
   const deleteContentMutation = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/admin/page-contents/${id}`);
@@ -146,35 +195,7 @@ export default function PageContentsPage() {
     },
   });
 
-  const createForm = useForm<FormData>({
-    resolver: zodResolver(pageContentSchema),
-    defaultValues: {
-      slug: "",
-      title: "",
-      content: "",
-    },
-  });
-
-  const editForm = useForm<FormData>({
-    resolver: zodResolver(pageContentSchema),
-    defaultValues: {
-      slug: editingContent?.slug || "",
-      title: editingContent?.title || "",
-      content: editingContent?.content || "",
-    },
-  });
-
-  // Update edit form when editing content changes
-  useEffect(() => {
-    if (editingContent) {
-      editForm.reset({
-        slug: editingContent.slug,
-        title: editingContent.title,
-        content: editingContent.content,
-      });
-    }
-  }, [editingContent, editForm]);
-
+  // Event handlers
   const handleEdit = (content: PageContent) => {
     setEditingContent(content);
     setIsEditDialogOpen(true);
@@ -220,8 +241,10 @@ export default function PageContentsPage() {
           content="Manage page contents for the website - create and edit pages like FAQ, Help Center, etc."
         />
       </Helmet>
+      
       <div className="flex h-screen bg-gray-100 overflow-hidden">
         <AdminSidebar />
+        
         <div className="flex-1 overflow-auto">
           <div className="container mx-auto p-6">
             <AdminHeader 
@@ -237,13 +260,15 @@ export default function PageContentsPage() {
                     Add Page
                   </Button>
                 </DialogTrigger>
+                
                 <DialogContent className="sm:max-w-[625px]">
                   <DialogHeader>
                     <DialogTitle>Create New Page</DialogTitle>
                     <DialogDescription>
-                      Add a new page that will be accessible from the footer. Use the form below to create the page.
+                      Add a new page that will be accessible from the footer.
                     </DialogDescription>
                   </DialogHeader>
+                  
                   <Form {...createForm}>
                     <form onSubmit={handleCreateSubmit} className="space-y-4">
                       <FormField
@@ -270,6 +295,7 @@ export default function PageContentsPage() {
                                 <SelectItem value="custom">Custom Slug</SelectItem>
                               </SelectContent>
                             </Select>
+                            
                             {field.value === "custom" && (
                               <Input
                                 placeholder="Enter custom slug (e.g., my-custom-page)"
@@ -278,6 +304,7 @@ export default function PageContentsPage() {
                                 className="mt-2"
                               />
                             )}
+                            
                             <FormDescription>
                               The URL-friendly identifier for this page (e.g., "privacy-policy")
                             </FormDescription>
@@ -285,6 +312,7 @@ export default function PageContentsPage() {
                           </FormItem>
                         )}
                       />
+                      
                       <FormField
                         control={createForm.control}
                         name="title"
@@ -301,6 +329,7 @@ export default function PageContentsPage() {
                           </FormItem>
                         )}
                       />
+                      
                       <FormField
                         control={createForm.control}
                         name="content"
@@ -321,6 +350,7 @@ export default function PageContentsPage() {
                           </FormItem>
                         )}
                       />
+                      
                       <DialogFooter>
                         <Button 
                           type="submit" 
@@ -410,6 +440,7 @@ export default function PageContentsPage() {
                     Make changes to the page content below.
                   </DialogDescription>
                 </DialogHeader>
+                
                 <Form {...editForm}>
                   <form onSubmit={handleEditSubmit} className="space-y-4">
                     <FormField
@@ -428,6 +459,7 @@ export default function PageContentsPage() {
                         </FormItem>
                       )}
                     />
+                    
                     <FormField
                       control={editForm.control}
                       name="title"
@@ -444,6 +476,7 @@ export default function PageContentsPage() {
                         </FormItem>
                       )}
                     />
+                    
                     <FormField
                       control={editForm.control}
                       name="content"
@@ -464,6 +497,7 @@ export default function PageContentsPage() {
                         </FormItem>
                       )}
                     />
+                    
                     <DialogFooter>
                       <Button 
                         type="button" 
@@ -516,8 +550,5 @@ export default function PageContentsPage() {
         </div>
       </div>
     </>
-  );
-}
-    </div>
   );
 }

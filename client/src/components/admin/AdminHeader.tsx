@@ -1,0 +1,34 @@
+import { Link } from "wouter";
+import { ArrowLeft, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface AdminHeaderProps {
+  title: string;
+  description?: string;
+}
+
+export default function AdminHeader({ title, description }: AdminHeaderProps) {
+  return (
+    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+        {description && (
+          <p className="text-muted-foreground mt-1">{description}</p>
+        )}
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          asChild
+          className="flex items-center gap-1"
+        >
+          <Link href="/admin">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Dashboard</span>
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
