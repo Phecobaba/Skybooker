@@ -19,7 +19,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: logoSetting } = useQuery({
-    queryKey: ["/api/site-settings/logo"],
+    queryKey: ["/api/site-settings", "logo"],
     queryFn: async ({ signal }) => {
       const res = await fetch("/api/site-settings/logo", { signal });
       if (!res.ok) {
