@@ -7,6 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import AdminSidebar from "@/components/admin/Sidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
 import { 
   FlightWithLocations, 
   Location, 
@@ -354,8 +355,12 @@ export default function AdminFlightsPage() {
           <main className="flex-1 relative overflow-y-auto focus:outline-none">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                <div className="flex justify-between items-center mb-6">
-                  <h1 className="text-2xl font-semibold text-gray-900">Flight Management</h1>
+                <AdminHeader 
+                  title="Flight Management"
+                  description="Add, edit, or remove flights from the system"
+                />
+                
+                <div className="flex justify-end mb-6">
                   <Button 
                     onClick={() => setIsAddDialogOpen(true)}
                     className="bg-primary hover:bg-primary/90"

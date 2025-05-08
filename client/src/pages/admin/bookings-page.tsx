@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Loader2, Search, Eye, Check, X, Filter, CalendarIcon } from "lucide-react";
 import AdminSidebar from "@/components/admin/Sidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
 import { BookingWithDetails } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -241,40 +242,40 @@ export default function AdminBookingsPage() {
           <main className="flex-1 relative overflow-y-auto focus:outline-none">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-3 sm:space-y-0">
-                  <h1 className="text-2xl font-semibold text-gray-900">
-                    Booking Management
-                  </h1>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsFilterModalOpen(true)}
-                      className="flex items-center"
-                    >
-                      <Filter className="h-4 w-4 mr-2" />
-                      Filter
-                      {(filterOptions.status !== "all" ||
-                        filterOptions.dateRange !== "all" ||
-                        filterOptions.originCode ||
-                        filterOptions.destinationCode) && (
-                        <span className="ml-1 w-2 h-2 rounded-full bg-primary"></span>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={resetFilters}
-                      className="flex items-center"
-                      disabled={
-                        filterOptions.status === "all" &&
-                        filterOptions.dateRange === "all" &&
-                        !filterOptions.originCode &&
-                        !filterOptions.destinationCode &&
-                        !searchText
-                      }
-                    >
-                      Reset
-                    </Button>
-                  </div>
+                <AdminHeader 
+                  title="Booking Management"
+                  description="View and manage flight bookings"
+                />
+                
+                <div className="flex justify-end mb-6 space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsFilterModalOpen(true)}
+                    className="flex items-center"
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter
+                    {(filterOptions.status !== "all" ||
+                      filterOptions.dateRange !== "all" ||
+                      filterOptions.originCode ||
+                      filterOptions.destinationCode) && (
+                      <span className="ml-1 w-2 h-2 rounded-full bg-primary"></span>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={resetFilters}
+                    className="flex items-center"
+                    disabled={
+                      filterOptions.status === "all" &&
+                      filterOptions.dateRange === "all" &&
+                      !filterOptions.originCode &&
+                      !filterOptions.destinationCode &&
+                      !searchText
+                    }
+                  >
+                    Reset
+                  </Button>
                 </div>
 
                 <div className="mb-6">

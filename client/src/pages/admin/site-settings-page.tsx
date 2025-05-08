@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import AdminSidebar from "@/components/admin/Sidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Form schema for site settings
@@ -177,12 +178,10 @@ export default function SiteSettingsPage() {
         <AdminSidebar />
         <div className="flex-1 overflow-auto p-8">
           <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Site Settings</h1>
-              <p className="text-muted-foreground">
-                Manage your website's appearance and contact information.
-              </p>
-            </div>
+            <AdminHeader 
+              title="Site Settings"
+              description="Manage your website's appearance and contact information"
+            />
 
             <Tabs defaultValue="general">
               <TabsList className="mb-4">
