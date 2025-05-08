@@ -260,6 +260,11 @@ function getStatusSpecificMessage(status: string): string {
         <p>Your flight has been completed. We hope you had a pleasant journey!</p>
         <p>Please consider leaving a review of your experience.</p>
       `;
+    case 'declined':
+      return `
+        <p>We regret to inform you that your booking payment has been declined.</p>
+        <p>Please contact our customer support team for more information or try to make a payment again.</p>
+      `;
     default:
       return '';
   }

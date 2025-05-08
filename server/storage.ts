@@ -463,14 +463,15 @@ export class MemStorage implements IStorage {
       status: "Pending",
       paymentReference: null,
       paymentProof: null,
-      receiptPath: null
+      receiptPath: null,
+      declineReason: null
     };
     
     this.bookings.set(id, booking);
     return booking;
   }
 
-  async updateBookingStatus(id: number, status: string): Promise<Booking | undefined> {
+  async updateBookingStatus(id: number, status: string, declineReason?: string): Promise<Booking | undefined> {
     const booking = this.bookings.get(id);
     if (!booking) {
       return undefined;
@@ -478,7 +479,8 @@ export class MemStorage implements IStorage {
     
     const updatedBooking: Booking = {
       ...booking,
-      status
+      status,
+      declineReason: status === "Declined" && declineReason ? declineReason : booking.declineReason
     };
     
     this.bookings.set(id, updatedBooking);
