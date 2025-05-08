@@ -49,18 +49,18 @@ export default function Footer() {
             <h3 className="font-bold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/">
-                  <a className="text-gray-300 hover:text-white transition-colors">Home</a>
+                <Link href="/" className="text-gray-300 hover:text-white transition-colors">
+                  Home
                 </Link>
               </li>
               <li>
-                <Link href="/search">
-                  <a className="text-gray-300 hover:text-white transition-colors">Search Flights</a>
+                <Link href="/search" className="text-gray-300 hover:text-white transition-colors">
+                  Search Flights
                 </Link>
               </li>
               <li>
-                <Link href="/my-bookings">
-                  <a className="text-gray-300 hover:text-white transition-colors">My Bookings</a>
+                <Link href="/my-bookings" className="text-gray-300 hover:text-white transition-colors">
+                  My Bookings
                 </Link>
               </li>
               <li>
