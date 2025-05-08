@@ -251,6 +251,8 @@ export default function AdminLocationsPage() {
                 <AdminHeader 
                   title="Location Management"
                   description="Add, edit, or remove locations for flight origins and destinations"
+                  showBackButton={true}
+                  backButtonUrl="/admin"
                 />
                 
                 <div className="flex justify-end mb-6">

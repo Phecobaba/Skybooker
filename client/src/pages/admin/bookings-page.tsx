@@ -245,6 +245,8 @@ export default function AdminBookingsPage() {
                 <AdminHeader 
                   title="Booking Management"
                   description="View and manage flight bookings"
+                  showBackButton={true}
+                  backButtonUrl="/admin"
                 />
                 
                 <div className="flex justify-end mb-6 space-x-2">
