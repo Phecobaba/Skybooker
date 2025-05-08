@@ -1,4 +1,4 @@
-import { users, locations, flights, bookings, paymentAccounts, siteSettings } from "@shared/schema";
+import { users, locations, flights, bookings, paymentAccounts, siteSettings, pageContents } from "@shared/schema";
 import type { 
   User, 
   InsertUser, 
@@ -13,7 +13,9 @@ import type {
   FlightWithLocations,
   BookingWithDetails,
   SiteSetting,
-  InsertSiteSetting
+  InsertSiteSetting,
+  PageContent,
+  InsertPageContent
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -65,6 +67,13 @@ export interface IStorage {
   getSiteSettingByKey(key: string): Promise<SiteSetting | undefined>;
   upsertSiteSetting(setting: InsertSiteSetting): Promise<SiteSetting>;
   deleteSiteSetting(key: string): Promise<boolean>;
+  
+  // Page Contents
+  getAllPageContents(): Promise<PageContent[]>;
+  getPageContentBySlug(slug: string): Promise<PageContent | undefined>;
+  createPageContent(content: InsertPageContent): Promise<PageContent>;
+  updatePageContent(id: number, content: Partial<InsertPageContent>): Promise<PageContent | undefined>;
+  deletePageContent(id: number): Promise<boolean>;
 
   // Session store
   sessionStore: any; // Using any for session store type to avoid type errors
@@ -77,6 +86,7 @@ export class MemStorage implements IStorage {
   private bookings: Map<number, Booking>;
   private paymentAccounts: Map<number, PaymentAccount>;
   private siteSettings: Map<number, SiteSetting>;
+  private pageContents: Map<number, PageContent>;
   
   sessionStore: any; // Using any for session store type
   
@@ -86,6 +96,7 @@ export class MemStorage implements IStorage {
   currentBookingId: number;
   currentPaymentAccountId: number;
   currentSiteSettingId: number;
+  currentPageContentId: number;
 
   constructor() {
     this.users = new Map();

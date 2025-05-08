@@ -67,6 +67,15 @@ export const siteSettings = pgTable("site_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const pageContents = pgTable("page_contents", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(), // help-center, faq, privacy-policy, terms-conditions
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedBy: integer("updated_by").notNull().references(() => users.id),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertLocationSchema = createInsertSchema(locations).omit({ id: true });
@@ -75,6 +84,7 @@ export const insertFlightSchema = createInsertSchema(flights).omit({ id: true })
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true });
 export const insertPaymentAccountSchema = createInsertSchema(paymentAccounts).omit({ id: true });
 export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({ id: true, updatedAt: true });
+export const insertPageContentSchema = createInsertSchema(pageContents).omit({ id: true, updatedAt: true });
 
 // Login Schema
 export const loginSchema = z.object({
@@ -100,6 +110,9 @@ export type PaymentAccount = typeof paymentAccounts.$inferSelect;
 
 export type InsertSiteSetting = z.infer<typeof insertSiteSettingSchema>;
 export type SiteSetting = typeof siteSettings.$inferSelect;
+
+export type InsertPageContent = z.infer<typeof insertPageContentSchema>;
+export type PageContent = typeof pageContents.$inferSelect;
 
 export type LoginData = z.infer<typeof loginSchema>;
 
