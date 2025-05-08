@@ -48,6 +48,7 @@ export default function PaymentPage() {
   const { toast } = useToast();
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   
   // Steps for the booking process
@@ -111,7 +112,11 @@ export default function PaymentPage() {
         description: "Your payment will be verified shortly.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
-      navigate("/my-bookings");
+      setPaymentSuccess(true);
+      // Redirect after short delay to allow user to see success message
+      setTimeout(() => {
+        navigate("/my-bookings");
+      }, 3000);
     },
     onError: (error: Error) => {
       toast({
@@ -208,111 +213,141 @@ export default function PaymentPage() {
               {/* Booking Steps */}
               <BookingStatusSteps steps={steps} className="mb-8" />
 
+              {/* Payment Success Message */}
+              {paymentSuccess && (
+                <div className="mb-8">
+                  <Alert className="bg-green-50 border-green-200">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <AlertTitle className="text-green-800 text-xl font-bold">Payment Submitted Successfully!</AlertTitle>
+                    <AlertDescription className="text-green-700">
+                      <p className="mb-2">Your payment proof has been submitted and is being processed. You will be redirected to your bookings page in a moment...</p>
+                      <p>You will receive an email confirmation once your payment is verified.</p>
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Payment Instructions */}
                 <div className="lg:col-span-2">
                   <div className="bg-white rounded-lg shadow-md p-5 mb-6">
                     <h3 className="text-lg font-bold mb-4">Payment Instructions</h3>
                     
-                    <div className="mb-6 border-b pb-4">
-                      {hasNoPaymentMethodsEnabled ? (
-                        <Alert variant="destructive">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertTitle>Payment methods unavailable</AlertTitle>
-                          <AlertDescription>
-                            All payment methods are currently disabled. Please contact customer support to complete your payment.
-                          </AlertDescription>
-                        </Alert>
-                      ) : (
-                        <>
-                          <p className="text-gray-700 mb-3">
-                            Please use one of the following payment methods to complete your booking:
-                          </p>
-                          
-                          {paymentAccount ? (
-                            <PaymentMethodCard paymentAccount={paymentAccount} />
-                          ) : (
+                    {!paymentSuccess && (
+                      <>
+                        <div className="mb-6 border-b pb-4">
+                          {hasNoPaymentMethodsEnabled ? (
                             <Alert variant="destructive">
                               <AlertCircle className="h-4 w-4" />
-                              <AlertTitle>Payment information unavailable</AlertTitle>
+                              <AlertTitle>Payment methods unavailable</AlertTitle>
                               <AlertDescription>
-                                Please contact customer support to complete your payment.
+                                All payment methods are currently disabled. Please contact customer support to complete your payment.
                               </AlertDescription>
                             </Alert>
-                          )}
-                        </>
-                      )}
-                    </div>
-
-                    <Form {...form}>
-                      <form 
-                        ref={formRef}
-                        onSubmit={form.handleSubmit(onSubmit)} 
-                        className="space-y-6"
-                      >
-                        <div>
-                          <h4 className="font-bold mb-3">Upload Payment Proof</h4>
-                          <p className="text-gray-700 mb-4">
-                            After making your payment, please upload a proof of payment below (screenshot, reference number, etc.).
-                          </p>
-                          
-                          <FileUpload
-                            onFileSelect={handleFileSelect}
-                            accept="image/*"
-                          />
-
-                          <div className="mt-6">
-                            <FormField
-                              control={form.control}
-                              name="paymentReference"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>
-                                    Payment Reference Number (optional)
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      placeholder="Leave empty for auto-generated reference" 
-                                      {...field} 
-                                    />
-                                  </FormControl>
-                                  <p className="text-sm text-gray-500 mt-1">
-                                    A transaction reference will be automatically generated if not provided.
-                                  </p>
-                                  <FormMessage />
-                                </FormItem>
+                          ) : (
+                            <>
+                              <p className="text-gray-700 mb-3">
+                                Please use one of the following payment methods to complete your booking:
+                              </p>
+                              
+                              {paymentAccount ? (
+                                <PaymentMethodCard paymentAccount={paymentAccount} />
+                              ) : (
+                                <Alert variant="destructive">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <AlertTitle>Payment information unavailable</AlertTitle>
+                                  <AlertDescription>
+                                    Please contact customer support to complete your payment.
+                                  </AlertDescription>
+                                </Alert>
                               )}
-                            />
-                          </div>
+                            </>
+                          )}
                         </div>
 
-                        <div className="lg:hidden mt-6">
-                          <Button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full bg-orange-500 hover:bg-orange-600"
+                        <Form {...form}>
+                          <form 
+                            ref={formRef}
+                            onSubmit={form.handleSubmit(onSubmit)} 
+                            className="space-y-6"
                           >
-                            {isSubmitting ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Processing...
-                              </>
-                            ) : (
-                              "Complete Booking"
-                            )}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleBack}
-                            className="w-full mt-2"
-                            disabled={isSubmitting}
-                          >
-                            Back to Passenger Details
-                          </Button>
+                            <div>
+                              <h4 className="font-bold mb-3">Upload Payment Proof</h4>
+                              <p className="text-gray-700 mb-4">
+                                After making your payment, please upload a proof of payment below (screenshot, reference number, etc.).
+                              </p>
+                              
+                              <FileUpload
+                                onFileSelect={handleFileSelect}
+                                accept="image/*"
+                              />
+
+                              <div className="mt-6">
+                                <FormField
+                                  control={form.control}
+                                  name="paymentReference"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>
+                                        Payment Reference Number (optional)
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="Leave empty for auto-generated reference" 
+                                          {...field} 
+                                        />
+                                      </FormControl>
+                                      <p className="text-sm text-gray-500 mt-1">
+                                        A transaction reference will be automatically generated if not provided.
+                                      </p>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="lg:hidden mt-6">
+                              <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full bg-orange-500 hover:bg-orange-600"
+                              >
+                                {isSubmitting ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  "Complete Booking"
+                                )}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleBack}
+                                className="w-full mt-2"
+                                disabled={isSubmitting}
+                              >
+                                Back to Passenger Details
+                              </Button>
+                            </div>
+                          </form>
+                        </Form>
+                      </>
+                    )}
+                    
+                    {paymentSuccess && (
+                      <div className="py-8 flex flex-col items-center justify-center">
+                        <div className="bg-green-100 rounded-full p-3 mb-4">
+                          <Check className="h-12 w-12 text-green-600" />
                         </div>
-                      </form>
-                    </Form>
+                        <h3 className="text-xl font-bold text-center mb-2">Payment Submitted!</h3>
+                        <p className="text-center text-gray-600">
+                          You will be redirected to your bookings page in a moment.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -357,32 +392,47 @@ export default function PaymentPage() {
                       </p>
                     </div>
 
-                    <div className="mt-6 hidden lg:block">
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full bg-orange-500 hover:bg-orange-600"
-                        onClick={() => formRef.current?.requestSubmit()}
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          "Complete Booking"
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleBack}
-                        className="w-full mt-2"
-                        disabled={isSubmitting}
-                      >
-                        Back to Passenger Details
-                      </Button>
-                    </div>
+                    {!paymentSuccess && (
+                      <div className="mt-6 hidden lg:block">
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full bg-orange-500 hover:bg-orange-600"
+                          onClick={() => formRef.current?.requestSubmit()}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            "Complete Booking"
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleBack}
+                          className="w-full mt-2"
+                          disabled={isSubmitting}
+                        >
+                          Back to Passenger Details
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {paymentSuccess && (
+                      <div className="mt-6 hidden lg:block">
+                        <Button
+                          type="button"
+                          className="w-full"
+                          disabled
+                        >
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Redirecting...
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
