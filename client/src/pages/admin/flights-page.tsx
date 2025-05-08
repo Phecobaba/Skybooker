@@ -358,6 +358,8 @@ export default function AdminFlightsPage() {
                 <AdminHeader 
                   title="Flight Management"
                   description="Add, edit, or remove flights from the system"
+                  showBackButton={true}
+                  backButtonUrl="/admin"
                 />
                 
                 <div className="flex justify-end mb-6">
