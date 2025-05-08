@@ -615,8 +615,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid booking ID" });
       }
 
-      const { status } = req.body;
-      if (!status || !["Pending", "Confirmed", "Paid", "Declined", "Completed"].includes(status)) {
+      const { status, declineReason } = req.body;
+      if (!status || !["Pending", "Confirmed", "Paid", "Declined", "Completed", "Pending Payment"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
 
@@ -628,8 +628,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const previousStatus = currentBooking.status;
       
-      // Update the status
-      const updatedBooking = await storage.updateBookingStatus(bookingId, status);
+      // Update the status (with optional decline reason if status is Declined)
+      const updatedBooking = await storage.updateBookingStatus(bookingId, status, status === "Declined" ? declineReason : undefined);
       if (!updatedBooking) {
         return res.status(404).json({ message: "Booking not found" });
       }

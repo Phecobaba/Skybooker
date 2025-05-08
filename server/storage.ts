@@ -48,7 +48,7 @@ export interface IStorage {
   getBookingById(id: number): Promise<BookingWithDetails | undefined>;
   getBookingsByUserId(userId: number): Promise<BookingWithDetails[]>;
   createBooking(booking: InsertBooking): Promise<Booking>;
-  updateBookingStatus(id: number, status: string): Promise<Booking | undefined>;
+  updateBookingStatus(id: number, status: string, declineReason?: string): Promise<Booking | undefined>;
   updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string, receiptPath?: string }): Promise<Booking | undefined>;
   updateBookingReceipt(id: number, receiptPath: string): Promise<Booking | undefined>;
 

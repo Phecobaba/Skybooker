@@ -357,9 +357,17 @@ export class DatabaseStorage implements IStorage {
       return existingBooking;
     }
     
+    // Prepare the update data
+    const updateData: Partial<Booking> = { status };
+    
+    // Add decline reason if provided and status is "Declined"
+    if (status === "Declined" && declineReason) {
+      updateData.declineReason = declineReason;
+    }
+    
     const [booking] = await db
       .update(bookings)
-      .set({ status })
+      .set(updateData)
       .where(eq(bookings.id, id))
       .returning();
     
