@@ -236,6 +236,10 @@ export default function AdminFlightsPage() {
   const updateFlightMutation = useMutation({
     mutationFn: async ({ id, flightData }: { id: number; flightData: any }) => {
       const res = await apiRequest("PUT", `/api/admin/flights/${id}`, flightData);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to update flight");
+      }
       return await res.json();
     },
     onSuccess: () => {
@@ -248,6 +252,7 @@ export default function AdminFlightsPage() {
       setSelectedFlightId(null);
     },
     onError: (error: Error) => {
+      console.error("Update flight error:", error);
       toast({
         title: "Error updating flight",
         description: error.message,

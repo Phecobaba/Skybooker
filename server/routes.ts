@@ -424,14 +424,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create flight (admin only)
   app.post("/api/admin/flights", isAdmin, async (req, res) => {
     try {
+      console.log("Creating flight with data:", req.body);
+      
+      // Validate that originId and destinationId are different
+      if (req.body.originId === req.body.destinationId) {
+        return res.status(400).json({ 
+          message: "Origin and destination cannot be the same location" 
+        });
+      }
+
+      // Validate that departureTime is before arrivalTime
+      const departureTime = new Date(req.body.departureTime);
+      const arrivalTime = new Date(req.body.arrivalTime);
+      
+      if (isNaN(departureTime.getTime()) || isNaN(arrivalTime.getTime())) {
+        return res.status(400).json({ 
+          message: "Invalid date format for departure or arrival time" 
+        });
+      }
+      
+      if (departureTime >= arrivalTime) {
+        return res.status(400).json({ 
+          message: "Departure time must be before arrival time" 
+        });
+      }
+
       const parseResult = insertFlightSchema.safeParse(req.body);
       if (!parseResult.success) {
-        return res.status(400).json({ message: "Invalid flight data", errors: parseResult.error.errors });
+        console.error("Flight schema validation failed:", parseResult.error.errors);
+        return res.status(400).json({ 
+          message: "Invalid flight data", 
+          errors: parseResult.error.errors 
+        });
       }
 
       const flight = await storage.createFlight(parseResult.data);
       res.status(201).json(flight);
     } catch (error) {
+      console.error("Error creating flight:", error);
       res.status(500).json({ message: "Failed to create flight" });
     }
   });
@@ -444,9 +474,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid flight ID" });
       }
 
+      console.log("Updating flight:", flightId, "with data:", req.body);
+      
+      // Validate that originId and destinationId are different
+      if (req.body.originId === req.body.destinationId) {
+        return res.status(400).json({ 
+          message: "Origin and destination cannot be the same location" 
+        });
+      }
+
+      // Validate that departureTime is before arrivalTime
+      const departureTime = new Date(req.body.departureTime);
+      const arrivalTime = new Date(req.body.arrivalTime);
+      
+      if (isNaN(departureTime.getTime()) || isNaN(arrivalTime.getTime())) {
+        return res.status(400).json({ 
+          message: "Invalid date format for departure or arrival time" 
+        });
+      }
+      
+      if (departureTime >= arrivalTime) {
+        return res.status(400).json({ 
+          message: "Departure time must be before arrival time" 
+        });
+      }
+
       const parseResult = insertFlightSchema.safeParse(req.body);
       if (!parseResult.success) {
-        return res.status(400).json({ message: "Invalid flight data", errors: parseResult.error.errors });
+        console.error("Flight schema validation failed:", parseResult.error.errors);
+        return res.status(400).json({ 
+          message: "Invalid flight data", 
+          errors: parseResult.error.errors 
+        });
       }
 
       const flight = await storage.updateFlight(flightId, parseResult.data);
@@ -456,6 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(flight);
     } catch (error) {
+      console.error("Error updating flight:", error);
       res.status(500).json({ message: "Failed to update flight" });
     }
   });
