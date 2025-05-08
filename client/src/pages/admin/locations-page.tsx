@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import AdminSidebar from "@/components/admin/Sidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
 import { Location, insertLocationSchema } from "@shared/schema";
 import { Plus, Edit, Trash2, Loader2, Search, Globe, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -247,10 +248,12 @@ export default function AdminLocationsPage() {
           <main className="flex-1 relative overflow-y-auto focus:outline-none">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                <div className="flex justify-between items-center mb-6">
-                  <h1 className="text-2xl font-semibold text-gray-900">
-                    Location Management
-                  </h1>
+                <AdminHeader 
+                  title="Location Management"
+                  description="Add, edit, or remove locations for flight origins and destinations"
+                />
+                
+                <div className="flex justify-end mb-6">
                   <Button
                     onClick={() => setIsAddDialogOpen(true)}
                     className="bg-primary hover:bg-primary/90"
