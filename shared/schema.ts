@@ -43,6 +43,7 @@ export const bookings = pgTable("bookings", {
   paymentReference: text("payment_reference"),
   paymentProof: text("payment_proof"),
   receiptPath: text("receipt_path"),
+  declineReason: text("decline_reason"),
 });
 
 export const paymentAccounts = pgTable("payment_accounts", {

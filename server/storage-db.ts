@@ -339,7 +339,7 @@ export class DatabaseStorage implements IStorage {
     return booking;
   }
 
-  async updateBookingStatus(id: number, status: string): Promise<Booking | undefined> {
+  async updateBookingStatus(id: number, status: string, declineReason?: string): Promise<Booking | undefined> {
     // Get the booking before update to know the previous status
     const [existingBooking] = await db
       .select()
