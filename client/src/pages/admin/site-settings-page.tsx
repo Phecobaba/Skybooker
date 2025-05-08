@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import AdminLayout from "@/components/AdminLayout";
+import AdminSidebar from "@/components/admin/Sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Form schema for site settings
@@ -164,14 +164,17 @@ export default function SiteSettingsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Site Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your website's appearance and contact information.
-          </p>
-        </div>
+    <div className="bg-background min-h-screen">
+      <div className="flex h-screen overflow-hidden">
+        <AdminSidebar />
+        <div className="flex-1 overflow-auto p-8">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Site Settings</h1>
+              <p className="text-muted-foreground">
+                Manage your website's appearance and contact information.
+              </p>
+            </div>
 
         <Tabs defaultValue="general">
           <TabsList className="mb-4">
