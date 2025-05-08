@@ -1,7 +1,7 @@
 import { type Express } from "express";
 import express from 'express';
 import { createServer, type Server } from "http";
-import { setupAuth, isAdmin } from "./auth";
+import { setupAuth, isAdmin, hashPassword } from "./auth";
 import { storage } from "./storage";
 import multer from "multer";
 import path from "path";
@@ -12,6 +12,7 @@ import {
   insertLocationSchema, 
   insertBookingSchema, 
   insertPaymentAccountSchema,
+  insertUserSchema,
   flightSearchSchema
 } from "@shared/schema";
 
@@ -673,6 +674,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(users);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+  
+  // Create user (admin only)
+  app.post("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      // Validate input
+      const userInput = insertUserSchema.parse(req.body);
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(userInput.username);
+      if (existingUser) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+      
+      // Check if email already exists if email is provided
+      if (userInput.email) {
+        const userWithEmail = await storage.getUserByEmail(userInput.email);
+        if (userWithEmail) {
+          return res.status(400).json({ error: "Email already exists" });
+        }
+      }
+      
+      // Hash password
+      userInput.password = await hashPassword(userInput.password);
+      
+      // Create user
+      const newUser = await storage.createUser(userInput);
+      res.status(201).json(newUser);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+  
+  // Update user (admin only)
+  app.put("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Get existing user
+      const existingUser = await storage.getUser(userId);
+      if (!existingUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Validate input
+      const userInput = req.body;
+      
+      // Check username uniqueness if changing username
+      if (userInput.username && userInput.username !== existingUser.username) {
+        const userWithUsername = await storage.getUserByUsername(userInput.username);
+        if (userWithUsername) {
+          return res.status(400).json({ error: "Username already exists" });
+        }
+      }
+      
+      // Check email uniqueness if changing email
+      if (userInput.email && userInput.email !== existingUser.email) {
+        const userWithEmail = await storage.getUserByEmail(userInput.email);
+        if (userWithEmail) {
+          return res.status(400).json({ error: "Email already exists" });
+        }
+      }
+      
+      // Hash password if provided
+      if (userInput.password) {
+        userInput.password = await hashPassword(userInput.password);
+      }
+      
+      // Update user
+      const updatedUser = await storage.updateUser(userId, userInput);
+      res.json(updatedUser);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+  
+  // Delete user (admin only)
+  app.delete("/api/admin/users/:id", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Prevent deleting self
+      if (req.user?.id === userId) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Delete user
+      await storage.deleteUser(userId);
+      res.status(204).send();
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
     }
   });
 

@@ -72,6 +72,48 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set(userData)
+        .where(eq(users.id, id))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return undefined;
+    }
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      // First check if user has any bookings
+      const userBookings = await db
+        .select()
+        .from(bookings)
+        .where(eq(bookings.userId, id));
+        
+      if (userBookings.length > 0) {
+        throw new Error("Cannot delete user with associated bookings");
+      }
+      
+      // If no bookings, proceed with deletion
+      const result = await db
+        .delete(users)
+        .where(eq(users.id, id))
+        .returning({ deletedId: users.id });
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      if (error instanceof Error) {
+        throw error; // Re-throw custom errors
+      }
+      return false;
+    }
+  }
+
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
   }
