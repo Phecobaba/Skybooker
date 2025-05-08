@@ -30,6 +30,8 @@ export default function AdminPaymentsPage() {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
   const itemsPerPage = 10;
 
@@ -77,11 +79,13 @@ export default function AdminPaymentsPage() {
     mutationFn: async ({
       id,
       status,
+      declineReason,
     }: {
       id: number;
       status: string;
+      declineReason?: string;
     }) => {
-      const res = await apiRequest("PUT", `/api/admin/bookings/${id}/status`, { status });
+      const res = await apiRequest("PUT", `/api/admin/bookings/${id}/status`, { status, declineReason });
       return await res.json();
     },
     onSuccess: () => {
@@ -108,10 +112,23 @@ export default function AdminPaymentsPage() {
     });
   };
 
-  const handleDeclinePayment = (bookingId: number) => {
+  const openDeclineModal = (bookingId: number) => {
+    setSelectedBookingId(bookingId);
+    setDeclineReason("");
+    setIsDeclineModalOpen(true);
+  };
+  
+  const handleDeclinePayment = () => {
+    if (!selectedBookingId) return;
+    
     updateBookingStatusMutation.mutate({
-      id: bookingId,
+      id: selectedBookingId,
       status: "Declined",
+      declineReason: declineReason.trim() || undefined
+    }, {
+      onSuccess: () => {
+        setIsDeclineModalOpen(false);
+      }
     });
   };
 
@@ -488,7 +505,7 @@ export default function AdminPaymentsPage() {
                   Close
                 </Button>
                 <Button
-                  onClick={() => handleDeclinePayment(selectedBooking.id)}
+                  onClick={() => openDeclineModal(selectedBooking.id)}
                   variant="destructive"
                   disabled={updateBookingStatusMutation.isPending}
                 >
@@ -512,6 +529,47 @@ export default function AdminPaymentsPage() {
           </DialogContent>
         </Dialog>
       )}
+      
+      {/* Decline Payment Modal with Reason */}
+      <Dialog open={isDeclineModalOpen} onOpenChange={setIsDeclineModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Decline Payment</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <p className="mb-4">Please provide a reason for declining this payment (optional):</p>
+            <div className="space-y-4">
+              <Input
+                placeholder="Enter reason for declining payment"
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+              />
+              <p className="text-sm text-gray-500">
+                This reason will be included in the booking status update email sent to the customer.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeclineModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeclinePayment}
+              disabled={updateBookingStatusMutation.isPending}
+            >
+              {updateBookingStatusMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <X className="h-4 w-4 mr-2" />
+              )}
+              Decline Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
