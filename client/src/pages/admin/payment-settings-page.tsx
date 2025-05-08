@@ -20,6 +20,7 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Tabs,
   TabsContent,
@@ -61,6 +62,8 @@ export default function AdminPaymentSettingsPage() {
       swiftCode: "",
       mobileProvider: "",
       mobileNumber: "",
+      bankEnabled: true,
+      mobileEnabled: true,
     },
     mode: "onChange",
   });
@@ -76,6 +79,8 @@ export default function AdminPaymentSettingsPage() {
         swiftCode: account.swiftCode || "",
         mobileProvider: account.mobileProvider || "",
         mobileNumber: account.mobileNumber || "",
+        bankEnabled: account.bankEnabled === false ? false : true,
+        mobileEnabled: account.mobileEnabled === false ? false : true,
       });
     }
   }, [accounts, form]); // Depend on the accounts array instead of just account
@@ -152,6 +157,63 @@ export default function AdminPaymentSettingsPage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
+                        <div className="mb-6">
+                          <Card className="border border-gray-200">
+                            <CardContent className="pt-6">
+                              <div className="flex justify-between items-center mb-4">
+                                <div>
+                                  <h3 className="text-md font-medium">Payment Methods Availability</h3>
+                                  <p className="text-sm text-muted-foreground">Enable or disable payment methods for your customers</p>
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-4">
+                                <FormField
+                                  control={form.control}
+                                  name="bankEnabled"
+                                  render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                      <div className="space-y-0.5">
+                                        <FormLabel className="text-base">Bank Transfer</FormLabel>
+                                        <FormDescription>
+                                          Allow customers to pay via bank transfer
+                                        </FormDescription>
+                                      </div>
+                                      <FormControl>
+                                        <Switch
+                                          checked={field.value}
+                                          onCheckedChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={form.control}
+                                  name="mobileEnabled"
+                                  render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                      <div className="space-y-0.5">
+                                        <FormLabel className="text-base">Mobile Money</FormLabel>
+                                        <FormDescription>
+                                          Allow customers to pay via mobile money
+                                        </FormDescription>
+                                      </div>
+                                      <FormControl>
+                                        <Switch
+                                          checked={field.value}
+                                          onCheckedChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                        
                         <Tabs value={activeTab} onValueChange={setActiveTab}>
                           <TabsList className="grid w-full grid-cols-2 mb-6">
                             <TabsTrigger value="bank">Bank Transfer</TabsTrigger>

@@ -54,6 +54,8 @@ export const paymentAccounts = pgTable("payment_accounts", {
   swiftCode: text("swift_code"),
   mobileProvider: text("mobile_provider"),
   mobileNumber: text("mobile_number"),
+  bankEnabled: boolean("bank_enabled").default(true),
+  mobileEnabled: boolean("mobile_enabled").default(true),
 });
 
 // Insert Schemas
