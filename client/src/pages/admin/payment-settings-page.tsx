@@ -354,17 +354,34 @@ export default function AdminPaymentSettingsPage() {
                                           // Don't spread all field props to avoid value conflicts
                                           name={field.name}
                                           onBlur={(e) => {
+                                            const value = e.target.value.trim();
+                                            
                                             // On blur, if field is empty, set to 0
-                                            if (e.target.value.trim() === "") {
+                                            if (value === "") {
                                               field.onChange(0);
+                                              field.onBlur();
+                                              return;
                                             }
+                                            
+                                            // Convert string to decimal on blur
+                                            if (typeof field.value === 'string') {
+                                              const numValue = parseFloat(field.value);
+                                              if (!isNaN(numValue)) {
+                                                // Convert percentage to decimal (e.g., 13 -> 0.13)
+                                                field.onChange(numValue / 100);
+                                              } else {
+                                                // If invalid, reset to 0
+                                                field.onChange(0);
+                                              }
+                                            }
+                                            
                                             field.onBlur();
                                           }}
                                           ref={field.ref}
                                           // Display the percentage value (e.g., 13 instead of 0.13)
                                           // Only format when there's a value
                                           value={field.value !== undefined && field.value !== null && field.value !== 0 
-                                            ? (field.value * 100) 
+                                            ? (typeof field.value === 'string' ? field.value : field.value * 100) 
                                             : ""}
                                           onChange={(e) => {
                                             const inputValue = e.target.value;
@@ -375,19 +392,16 @@ export default function AdminPaymentSettingsPage() {
                                               return;
                                             }
                                             
-                                            // Allow only numbers and decimal points
+                                            // Accept more decimal formats:
+                                            // - Allow numbers (123)
+                                            // - Allow decimal point with digits on either side (1.23 or 1.)
+                                            // - Allow decimal point at start (.23)
                                             if (!/^[0-9]*\.?[0-9]*$/.test(inputValue)) {
                                               return;
                                             }
                                             
-                                            const value = parseFloat(inputValue);
-                                            if (!isNaN(value)) {
-                                              // Convert percentage to decimal (e.g., 13 -> 0.13)
-                                              field.onChange(value / 100);
-                                            } else {
-                                              // If not a valid number yet (like if just "." was entered)
-                                              field.onChange(inputValue);
-                                            }
+                                            // Directly store the input value during editing
+                                            field.onChange(inputValue);
                                           }}
                                         />
                                       </FormControl>
@@ -413,17 +427,34 @@ export default function AdminPaymentSettingsPage() {
                                           // Don't spread all field props to avoid value conflicts
                                           name={field.name}
                                           onBlur={(e) => {
-                                            // On blur, if field is empty, set to 0
-                                            if (e.target.value.trim() === "") {
+                                            const value = e.target.value.trim();
+                                            
+                                            // On blur, if field is empty, set to a 0
+                                            if (value === "") {
                                               field.onChange(0);
+                                              field.onBlur();
+                                              return;
                                             }
+                                            
+                                            // Convert string to decimal on blur
+                                            if (typeof field.value === 'string') {
+                                              const numValue = parseFloat(field.value);
+                                              if (!isNaN(numValue)) {
+                                                // Convert percentage to decimal (e.g., 4 -> 0.04)
+                                                field.onChange(numValue / 100);
+                                              } else {
+                                                // If invalid, reset to 0
+                                                field.onChange(0);
+                                              }
+                                            }
+                                            
                                             field.onBlur();
                                           }}
                                           ref={field.ref}
                                           // Display the percentage value (e.g., 4 instead of 0.04)
                                           // Only format when there's a value
                                           value={field.value !== undefined && field.value !== null && field.value !== 0 
-                                            ? (field.value * 100) 
+                                            ? (typeof field.value === 'string' ? field.value : field.value * 100) 
                                             : ""}
                                           onChange={(e) => {
                                             const inputValue = e.target.value;
@@ -434,19 +465,16 @@ export default function AdminPaymentSettingsPage() {
                                               return;
                                             }
                                             
-                                            // Allow only numbers and decimal points
+                                            // Accept more decimal formats:
+                                            // - Allow numbers (123)
+                                            // - Allow decimal point with digits on either side (1.23 or 1.)
+                                            // - Allow decimal point at start (.23)
                                             if (!/^[0-9]*\.?[0-9]*$/.test(inputValue)) {
                                               return;
                                             }
                                             
-                                            const value = parseFloat(inputValue);
-                                            if (!isNaN(value)) {
-                                              // Convert percentage to decimal (e.g., 4 -> 0.04)
-                                              field.onChange(value / 100);
-                                            } else {
-                                              // If not a valid number yet (like if just "." was entered)
-                                              field.onChange(inputValue);
-                                            }
+                                            // Directly store the input value during editing
+                                            field.onChange(inputValue);
                                           }}
                                         />
                                       </FormControl>
