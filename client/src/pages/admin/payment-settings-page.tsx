@@ -157,71 +157,71 @@ export default function AdminPaymentSettingsPage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="mb-6">
-                          <Card className="border border-gray-200">
-                            <CardContent className="pt-6">
-                              <div className="flex justify-between items-center mb-4">
-                                <div>
-                                  <h3 className="text-md font-medium">Payment Methods Availability</h3>
-                                  <p className="text-sm text-muted-foreground">Enable or disable payment methods for your customers</p>
-                                </div>
-                              </div>
+                        <Form {...form}>
+                          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="mb-6">
+                              <Card className="border border-gray-200">
+                                <CardContent className="pt-6">
+                                  <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                      <h3 className="text-md font-medium">Payment Methods Availability</h3>
+                                      <p className="text-sm text-muted-foreground">Enable or disable payment methods for your customers</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="space-y-4">
+                                    <FormField
+                                      control={form.control}
+                                      name="bankEnabled"
+                                      render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                          <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Bank Transfer</FormLabel>
+                                            <FormDescription>
+                                              Allow customers to pay via bank transfer
+                                            </FormDescription>
+                                          </div>
+                                          <FormControl>
+                                            <Switch
+                                              checked={field.value}
+                                              onCheckedChange={field.onChange}
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
+                                    
+                                    <FormField
+                                      control={form.control}
+                                      name="mobileEnabled"
+                                      render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                          <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Mobile Money</FormLabel>
+                                            <FormDescription>
+                                              Allow customers to pay via mobile money
+                                            </FormDescription>
+                                          </div>
+                                          <FormControl>
+                                            <Switch
+                                              checked={field.value}
+                                              onCheckedChange={field.onChange}
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                            
+                            <Tabs value={activeTab} onValueChange={setActiveTab}>
+                              <TabsList className="grid w-full grid-cols-2 mb-6">
+                                <TabsTrigger value="bank">Bank Transfer</TabsTrigger>
+                                <TabsTrigger value="mobile">Mobile Money</TabsTrigger>
+                              </TabsList>
                               
-                              <div className="space-y-4">
-                                <FormField
-                                  control={form.control}
-                                  name="bankEnabled"
-                                  render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                      <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Bank Transfer</FormLabel>
-                                        <FormDescription>
-                                          Allow customers to pay via bank transfer
-                                        </FormDescription>
-                                      </div>
-                                      <FormControl>
-                                        <Switch
-                                          checked={field.value}
-                                          onCheckedChange={field.onChange}
-                                        />
-                                      </FormControl>
-                                    </FormItem>
-                                  )}
-                                />
-                                
-                                <FormField
-                                  control={form.control}
-                                  name="mobileEnabled"
-                                  render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                      <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Mobile Money</FormLabel>
-                                        <FormDescription>
-                                          Allow customers to pay via mobile money
-                                        </FormDescription>
-                                      </div>
-                                      <FormControl>
-                                        <Switch
-                                          checked={field.value}
-                                          onCheckedChange={field.onChange}
-                                        />
-                                      </FormControl>
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                        
-                        <Tabs value={activeTab} onValueChange={setActiveTab}>
-                          <TabsList className="grid w-full grid-cols-2 mb-6">
-                            <TabsTrigger value="bank">Bank Transfer</TabsTrigger>
-                            <TabsTrigger value="mobile">Mobile Money</TabsTrigger>
-                          </TabsList>
-
-                          <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                               <TabsContent value="bank" className="space-y-4">
                                 <FormField
                                   control={form.control}
@@ -327,21 +327,21 @@ export default function AdminPaymentSettingsPage() {
                                   )}
                                 />
                               </TabsContent>
+                            </Tabs>
 
-                              <div className="flex justify-end">
-                                <Button 
-                                  type="submit" 
-                                  disabled={updatePaymentAccountMutation.isPending || !form.formState.isDirty}
-                                  className="flex items-center gap-2"
-                                >
-                                  {updatePaymentAccountMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                                  <Save className="h-4 w-4" />
-                                  Save Settings
-                                </Button>
-                              </div>
-                            </form>
-                          </Form>
-                        </Tabs>
+                            <div className="flex justify-end">
+                              <Button 
+                                type="submit" 
+                                disabled={updatePaymentAccountMutation.isPending || !form.formState.isDirty}
+                                className="flex items-center gap-2"
+                              >
+                                {updatePaymentAccountMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                                <Save className="h-4 w-4" />
+                                Save Settings
+                              </Button>
+                            </div>
+                          </form>
+                        </Form>
                       </CardContent>
                     </Card>
 
@@ -366,7 +366,10 @@ export default function AdminPaymentSettingsPage() {
                                   <li><strong>Account Number:</strong> {form.watch("accountNumber") || "[Account Number]"}</li>
                                   <li><strong>SWIFT/BIC Code:</strong> {form.watch("swiftCode") || "[SWIFT Code]"}</li>
                                 </ul>
-                                <p className="mt-4">After making the payment, please upload the proof of payment (receipt or screenshot) and provide the reference number.</p>
+                                <p className="mt-4 text-sm text-gray-500">
+                                  Please use your booking reference number as the payment reference.
+                                  After making the payment, upload a screenshot or receipt of the payment on the booking payment page.
+                                </p>
                               </div>
                             </AccordionContent>
                           </AccordionItem>
@@ -380,7 +383,10 @@ export default function AdminPaymentSettingsPage() {
                                   <li><strong>Provider:</strong> {form.watch("mobileProvider") || "[Mobile Provider]"}</li>
                                   <li><strong>Number:</strong> {form.watch("mobileNumber") || "[Mobile Number]"}</li>
                                 </ul>
-                                <p className="mt-4">After making the payment, please upload the proof of payment (receipt or screenshot) and provide the reference number or transaction ID.</p>
+                                <p className="mt-4 text-sm text-gray-500">
+                                  Please use your booking reference number as the payment reference.
+                                  After making the payment, upload a screenshot or receipt of the payment on the booking payment page.
+                                </p>
                               </div>
                             </AccordionContent>
                           </AccordionItem>
