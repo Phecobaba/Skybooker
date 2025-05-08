@@ -626,7 +626,7 @@ export class MemStorage implements IStorage {
       // Update existing setting
       const updatedSetting: SiteSetting = {
         ...existingSetting,
-        value: setting.value,
+        value: setting.value ?? null,
         updatedAt: new Date()
       };
       this.siteSettings.set(existingSetting.id, updatedSetting);
@@ -636,7 +636,8 @@ export class MemStorage implements IStorage {
       const id = this.currentSiteSettingId++;
       const newSetting: SiteSetting = {
         id,
-        ...setting,
+        key: setting.key,
+        value: setting.value ?? null,
         updatedAt: new Date()
       };
       this.siteSettings.set(id, newSetting);

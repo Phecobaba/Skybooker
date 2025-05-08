@@ -13,6 +13,7 @@ import {
   insertBookingSchema, 
   insertPaymentAccountSchema,
   insertUserSchema,
+  insertSiteSettingSchema,
   flightSearchSchema
 } from "@shared/schema";
 

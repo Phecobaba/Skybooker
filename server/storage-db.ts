@@ -1,4 +1,4 @@
-import { users, locations, flights, bookings, paymentAccounts } from "@shared/schema";
+import { users, locations, flights, bookings, paymentAccounts, siteSettings } from "@shared/schema";
 import type { 
   User, 
   InsertUser, 
@@ -11,7 +11,9 @@ import type {
   PaymentAccount, 
   InsertPaymentAccount,
   FlightWithLocations,
-  BookingWithDetails
+  BookingWithDetails,
+  SiteSetting,
+  InsertSiteSetting
 } from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -527,6 +529,68 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error updating payment account:", error);
       throw error;
+    }
+  }
+
+  // Site Settings methods
+  async getSiteSettings(): Promise<SiteSetting[]> {
+    return await db.select().from(siteSettings);
+  }
+
+  async getSiteSettingByKey(key: string): Promise<SiteSetting | undefined> {
+    const [setting] = await db
+      .select()
+      .from(siteSettings)
+      .where(eq(siteSettings.key, key));
+    return setting || undefined;
+  }
+
+  async upsertSiteSetting(setting: InsertSiteSetting): Promise<SiteSetting> {
+    try {
+      // Check if setting already exists
+      const existingSetting = await this.getSiteSettingByKey(setting.key);
+      
+      if (existingSetting) {
+        // Update existing setting
+        const [updatedSetting] = await db
+          .update(siteSettings)
+          .set({
+            value: setting.value,
+            updatedAt: new Date()
+          })
+          .where(eq(siteSettings.key, setting.key))
+          .returning();
+        
+        return updatedSetting;
+      } else {
+        // Create new setting
+        const [newSetting] = await db
+          .insert(siteSettings)
+          .values({
+            ...setting,
+            updatedAt: new Date()
+          })
+          .returning();
+        
+        return newSetting;
+      }
+    } catch (error) {
+      console.error("Error upserting site setting:", error);
+      throw error;
+    }
+  }
+
+  async deleteSiteSetting(key: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(siteSettings)
+        .where(eq(siteSettings.key, key))
+        .returning({ deletedKey: siteSettings.key });
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error("Error deleting site setting:", error);
+      return false;
     }
   }
 }
