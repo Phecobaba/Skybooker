@@ -237,6 +237,11 @@ export default function MyBookingsPage() {
                               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(booking.status)}`}>
                                 {booking.status}
                               </span>
+                              {booking.status === "Declined" && booking.declineReason && (
+                                <div className="mt-1 text-xs text-red-600">
+                                  Reason: {booking.declineReason}
+                                </div>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               ${booking.flight.price.toFixed(2)}

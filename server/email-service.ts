@@ -138,7 +138,7 @@ export async function sendBookingStatusUpdateEmail(booking: BookingWithDetails, 
             <p><strong>Departure:</strong> ${new Date(flight.departureTime).toLocaleString()}</p>
           </div>
           
-          ${getStatusSpecificMessage(booking.status)}
+          ${getStatusSpecificMessage(booking.status, booking.declineReason)}
           
           <p>You can view your booking details and status anytime by logging into your SkyBooker account.</p>
           
@@ -235,7 +235,7 @@ export async function sendPaymentConfirmationEmail(booking: BookingWithDetails) 
 }
 
 // Helper function to get status-specific messages
-function getStatusSpecificMessage(status: string): string {
+function getStatusSpecificMessage(status: string, declineReason?: string | null): string {
   switch (status.toLowerCase()) {
     case 'confirmed':
       return `
@@ -263,6 +263,7 @@ function getStatusSpecificMessage(status: string): string {
     case 'declined':
       return `
         <p>We regret to inform you that your booking payment has been declined.</p>
+        ${declineReason ? `<p><strong>Reason:</strong> ${declineReason}</p>` : ''}
         <p>Please contact our customer support team for more information or try to make a payment again.</p>
       `;
     default:
