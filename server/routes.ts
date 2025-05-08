@@ -281,9 +281,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get payment accounts
   app.get("/api/payment-accounts", async (req, res) => {
     try {
+      console.log("Fetching payment accounts...");
       const accounts = await storage.getPaymentAccounts();
+      console.log("Payment accounts fetched:", accounts);
       res.json(accounts);
     } catch (error) {
+      console.error("Error fetching payment accounts:", error);
       res.status(500).json({ message: "Failed to fetch payment accounts" });
     }
   });

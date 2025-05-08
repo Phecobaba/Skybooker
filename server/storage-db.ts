@@ -430,9 +430,15 @@ export class DatabaseStorage implements IStorage {
 
   // Payment Account methods
   async getPaymentAccounts(): Promise<PaymentAccount[]> {
-    // Get all accounts and sort by ID (newest first)
-    const accounts = await db.select().from(paymentAccounts);
-    return accounts.sort((a, b) => b.id - a.id);
+    try {
+      // Get all accounts and sort by ID (newest first)
+      const accounts = await db.select().from(paymentAccounts);
+      console.log("Database retrieved payment accounts:", accounts);
+      return accounts.sort((a, b) => b.id - a.id);
+    } catch (error) {
+      console.error("Database error in getPaymentAccounts:", error);
+      throw error;
+    }
   }
 
   async updatePaymentAccount(account: InsertPaymentAccount): Promise<PaymentAccount> {
