@@ -734,7 +734,7 @@ export default function AdminBookingsPage() {
                   </div>
                 )}
                 
-                {selectedBooking.status === "Pending Payment" && selectedBooking.paymentProof && (
+                {selectedBooking.status === "Pending Payment" && (
                   <div className="mt-6 space-y-3">
                     <Button
                       className="w-full bg-green-600 hover:bg-green-700"
