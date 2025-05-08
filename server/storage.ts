@@ -105,6 +105,7 @@ export class MemStorage implements IStorage {
     this.bookings = new Map();
     this.paymentAccounts = new Map();
     this.siteSettings = new Map();
+    this.pageContents = new Map();
     
     this.currentUserId = 1;
     this.currentLocationId = 1;
@@ -112,6 +113,7 @@ export class MemStorage implements IStorage {
     this.currentBookingId = 1;
     this.currentPaymentAccountId = 1;
     this.currentSiteSettingId = 1;
+    this.currentPageContentId = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // 24 hours

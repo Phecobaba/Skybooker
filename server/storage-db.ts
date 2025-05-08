@@ -1,4 +1,4 @@
-import { users, locations, flights, bookings, paymentAccounts, siteSettings } from "@shared/schema";
+import { users, locations, flights, bookings, paymentAccounts, siteSettings, pageContents } from "@shared/schema";
 import type { 
   User, 
   InsertUser, 
@@ -13,7 +13,9 @@ import type {
   FlightWithLocations,
   BookingWithDetails,
   SiteSetting,
-  InsertSiteSetting
+  InsertSiteSetting,
+  PageContent,
+  InsertPageContent
 } from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -590,6 +592,75 @@ export class DatabaseStorage implements IStorage {
       return result.length > 0;
     } catch (error) {
       console.error("Error deleting site setting:", error);
+      return false;
+    }
+  }
+
+  // Page Content methods
+  async getAllPageContents(): Promise<PageContent[]> {
+    try {
+      return await db.select().from(pageContents);
+    } catch (error) {
+      console.error("Error fetching page contents:", error);
+      return [];
+    }
+  }
+
+  async getPageContentBySlug(slug: string): Promise<PageContent | undefined> {
+    try {
+      const [content] = await db
+        .select()
+        .from(pageContents)
+        .where(eq(pageContents.slug, slug));
+      return content || undefined;
+    } catch (error) {
+      console.error(`Error fetching page content with slug ${slug}:`, error);
+      return undefined;
+    }
+  }
+
+  async createPageContent(content: InsertPageContent): Promise<PageContent> {
+    try {
+      const [newContent] = await db
+        .insert(pageContents)
+        .values({
+          ...content,
+          updatedAt: new Date()
+        })
+        .returning();
+      return newContent;
+    } catch (error) {
+      console.error("Error creating page content:", error);
+      throw error;
+    }
+  }
+
+  async updatePageContent(id: number, content: Partial<InsertPageContent>): Promise<PageContent | undefined> {
+    try {
+      const [updatedContent] = await db
+        .update(pageContents)
+        .set({
+          ...content,
+          updatedAt: new Date()
+        })
+        .where(eq(pageContents.id, id))
+        .returning();
+      return updatedContent || undefined;
+    } catch (error) {
+      console.error(`Error updating page content with id ${id}:`, error);
+      return undefined;
+    }
+  }
+
+  async deletePageContent(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(pageContents)
+        .where(eq(pageContents.id, id))
+        .returning({ deletedId: pageContents.id });
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting page content with id ${id}:`, error);
       return false;
     }
   }
