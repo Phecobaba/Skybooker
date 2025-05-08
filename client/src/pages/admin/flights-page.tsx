@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet";
@@ -102,22 +102,24 @@ export default function AdminFlightsPage() {
   const idParam = searchParams.get("id");
   const actionParam = searchParams.get("action");
   
-  // Check URL params on component load
-  if (idParam && actionParam) {
-    const id = parseInt(idParam);
-    if (!isNaN(id)) {
-      if (actionParam === "edit" && !isEditDialogOpen) {
-        setSelectedFlightId(id);
-        setIsEditDialogOpen(true);
-      } else if (actionParam === "delete" && !isDeleteDialogOpen) {
-        setSelectedFlightId(id);
-        setIsDeleteDialogOpen(true);
+  // Check URL params on component load using useEffect to prevent infinite re-renders
+  useEffect(() => {
+    if (idParam && actionParam) {
+      const id = parseInt(idParam);
+      if (!isNaN(id)) {
+        if (actionParam === "edit" && !isEditDialogOpen) {
+          setSelectedFlightId(id);
+          setIsEditDialogOpen(true);
+        } else if (actionParam === "delete" && !isDeleteDialogOpen) {
+          setSelectedFlightId(id);
+          setIsDeleteDialogOpen(true);
+        }
+        
+        // Clear URL params after handling
+        navigate("/admin/flights");
       }
-      
-      // Clear URL params after handling
-      navigate("/admin/flights");
     }
-  }
+  }, [idParam, actionParam, isEditDialogOpen, isDeleteDialogOpen, navigate]);
 
   // Fetch flights
   const { 
@@ -190,19 +192,21 @@ export default function AdminFlightsPage() {
     },
   });
 
-  // Update edit form when selected flight changes
-  if (selectedFlight && isEditDialogOpen) {
-    editForm.reset({
-      originId: selectedFlight.originId,
-      destinationId: selectedFlight.destinationId,
-      departureDate: new Date(selectedFlight.departureTime),
-      departureTime: format(new Date(selectedFlight.departureTime), "HH:mm"),
-      arrivalDate: new Date(selectedFlight.arrivalTime),
-      arrivalTime: format(new Date(selectedFlight.arrivalTime), "HH:mm"),
-      price: selectedFlight.price.toString(),
-      capacity: selectedFlight.capacity.toString(),
-    });
-  }
+  // Update edit form when selected flight changes using useEffect
+  useEffect(() => {
+    if (selectedFlight && isEditDialogOpen) {
+      editForm.reset({
+        originId: selectedFlight.originId,
+        destinationId: selectedFlight.destinationId,
+        departureDate: new Date(selectedFlight.departureTime),
+        departureTime: format(new Date(selectedFlight.departureTime), "HH:mm"),
+        arrivalDate: new Date(selectedFlight.arrivalTime),
+        arrivalTime: format(new Date(selectedFlight.arrivalTime), "HH:mm"),
+        price: selectedFlight.price.toString(),
+        capacity: selectedFlight.capacity.toString(),
+      });
+    }
+  }, [selectedFlight, isEditDialogOpen, editForm]);
 
   // Create flight mutation
   const createFlightMutation = useMutation({
