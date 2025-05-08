@@ -41,6 +41,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import AdminSidebar from "@/components/admin/Sidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
 import { Loader2, PlusCircle, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -260,8 +261,15 @@ export default function AdminUsersPage() {
       <AdminSidebar />
       <div className="flex-1 overflow-auto">
         <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">User Management</h1>
+        <div className="mb-6">
+          <AdminHeader 
+            title="User Management"
+            description="Add, edit, and manage user accounts"
+            showBackButton={true}
+            backButtonUrl="/admin"
+          />
+        </div>
+        <div className="flex justify-end mb-4">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
