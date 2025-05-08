@@ -456,8 +456,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Parse with the schema that transforms string dates to Date objects
-      const parseResult = insertFlightSchema.safeParse(req.body);
+      // Convert string dates to Date objects for the database
+      const flightData = {
+        ...req.body,
+        departureTime: new Date(req.body.departureTime),
+        arrivalTime: new Date(req.body.arrivalTime)
+      };
+      
+      console.log("Transformed flight data:", flightData);
+
+      // Validate the data with our schema
+      const parseResult = insertFlightSchema.safeParse(flightData);
       if (!parseResult.success) {
         console.error("Flight schema validation failed:", parseResult.error.errors);
         return res.status(400).json({ 
@@ -466,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const flight = await storage.createFlight(parseResult.data);
+      const flight = await storage.createFlight(flightData);
       res.status(201).json(flight);
     } catch (error) {
       console.error("Error creating flight:", error);
@@ -514,8 +523,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Parse with the schema that transforms string dates to Date objects
-      const parseResult = insertFlightSchema.safeParse(req.body);
+      // Convert date strings to Date objects manually before validation
+      const flightData = {
+        ...req.body,
+        departureTime: new Date(req.body.departureTime),
+        arrivalTime: new Date(req.body.arrivalTime)
+      };
+      
+      console.log("Transformed flight data:", flightData);
+      
+      // Validate the data with our schema
+      const parseResult = insertFlightSchema.safeParse(flightData);
       if (!parseResult.success) {
         console.error("Flight schema validation failed:", parseResult.error.errors);
         return res.status(400).json({ 
@@ -524,7 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const flight = await storage.updateFlight(flightId, parseResult.data);
+      const flight = await storage.updateFlight(flightId, flightData);
       if (!flight) {
         return res.status(404).json({ message: "Flight not found" });
       }
