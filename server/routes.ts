@@ -226,13 +226,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You don't have permission to update this booking" });
       }
 
-      const paymentReference = req.body.paymentReference;
+      // Auto-generate payment reference if not provided
+      let paymentReference = req.body.paymentReference;
+      if (!paymentReference) {
+        // Generate a unique reference with format: TX-[6 random alphanumeric chars]-[timestamp]
+        const randomChars = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const timestamp = Date.now();
+        paymentReference = `TX-${randomChars}-${timestamp}`;
+      }
+      
       const paymentProof = req.file ? `/uploads/${req.file.filename}` : undefined;
 
-      if (!paymentProof && !paymentReference) {
-        return res.status(400).json({ message: "Payment proof or reference is required" });
+      // Payment proof is still required
+      if (!paymentProof) {
+        return res.status(400).json({ message: "Payment proof is required" });
       }
 
+      console.log(`Processing payment for booking ${bookingId} with reference ${paymentReference}`);
+      
       // Update booking with payment info
       const updatedBooking = await storage.updateBookingPayment(bookingId, {
         paymentReference,
@@ -586,9 +597,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all bookings (admin only)
   app.get("/api/admin/bookings", isAdmin, async (req, res) => {
     try {
+      console.log("Admin requesting all bookings");
       const bookings = await storage.getAllBookings();
+      console.log("Found bookings:", bookings);
       res.json(bookings);
     } catch (error) {
+      console.error("Error fetching all bookings:", error);
       res.status(500).json({ message: "Failed to fetch bookings" });
     }
   });
