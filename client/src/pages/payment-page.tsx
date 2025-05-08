@@ -33,10 +33,13 @@ import {
 import { Helmet } from "react-helmet";
 
 const paymentSchema = z.object({
-  paymentReference: z.string().min(3, "Payment reference is required"),
+  paymentReference: z.string().optional(),
 });
 
-type PaymentFormValues = z.infer<typeof paymentSchema>;
+// Make sure the inferred type treats paymentReference as string (not string | undefined)
+type PaymentFormValues = {
+  paymentReference: string;
+};
 
 export default function PaymentPage() {
   const { bookingId } = useParams();
@@ -126,7 +129,10 @@ export default function PaymentPage() {
     setIsSubmitting(true);
     
     const formData = new FormData();
-    formData.append("paymentReference", values.paymentReference);
+    // Only append paymentReference if provided
+    if (values.paymentReference) {
+      formData.append("paymentReference", values.paymentReference);
+    }
     
     if (paymentFile) {
       formData.append("paymentProof", paymentFile);
@@ -243,14 +249,17 @@ export default function PaymentPage() {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>
-                                    Payment Reference Number (if applicable)
+                                    Payment Reference Number (optional)
                                   </FormLabel>
                                   <FormControl>
                                     <Input 
-                                      placeholder="e.g., TRX123456789" 
+                                      placeholder="Leave empty for auto-generated reference" 
                                       {...field} 
                                     />
                                   </FormControl>
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    A transaction reference will be automatically generated if not provided.
+                                  </p>
                                   <FormMessage />
                                 </FormItem>
                               )}
