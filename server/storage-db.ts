@@ -433,8 +433,19 @@ export class DatabaseStorage implements IStorage {
     try {
       // Get all accounts and sort by ID (newest first)
       const accounts = await db.select().from(paymentAccounts);
-      console.log("Database retrieved payment accounts:", accounts);
-      return accounts.sort((a, b) => b.id - a.id);
+      
+      // Ensure all accounts have the tax and service fee rates
+      const processedAccounts = accounts.map(account => {
+        return {
+          ...account,
+          // Default to 13% tax rate if not set
+          taxRate: account.taxRate !== null && account.taxRate !== undefined ? account.taxRate : 0.13,
+          // Default to 4% service fee if not set
+          serviceFeeRate: account.serviceFeeRate !== null && account.serviceFeeRate !== undefined ? account.serviceFeeRate : 0.04
+        };
+      });
+      
+      return processedAccounts.sort((a, b) => b.id - a.id);
     } catch (error) {
       console.error("Database error in getPaymentAccounts:", error);
       throw error;
@@ -442,26 +453,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePaymentAccount(account: InsertPaymentAccount): Promise<PaymentAccount> {
-    // Since the interface expects account to have an id, we need to check it
-    const accountId = (account as any).id;
-    
-    if (accountId) {
-      // Update existing account
-      const [updatedAccount] = await db
-        .update(paymentAccounts)
-        .set(account)
-        .where(eq(paymentAccounts.id, accountId))
-        .returning();
+    try {
+      // Format the account data with defaults for new fields if not provided
+      const accountData = {
+        ...account,
+        taxRate: account.taxRate !== undefined ? account.taxRate : 0.13,
+        serviceFeeRate: account.serviceFeeRate !== undefined ? account.serviceFeeRate : 0.04
+      };
       
-      return updatedAccount;
-    } else {
-      // Create new account
-      const [newAccount] = await db
-        .insert(paymentAccounts)
-        .values(account)
-        .returning();
+      // Since the interface expects account to have an id, we need to check it
+      const accountId = (account as any).id;
       
-      return newAccount;
+      if (accountId) {
+        // Update existing account
+        const [updatedAccount] = await db
+          .update(paymentAccounts)
+          .set(accountData)
+          .where(eq(paymentAccounts.id, accountId))
+          .returning();
+        
+        return updatedAccount;
+      } else {
+        // Create new account
+        const [newAccount] = await db
+          .insert(paymentAccounts)
+          .values(accountData)
+          .returning();
+        
+        return newAccount;
+      }
+    } catch (error) {
+      console.error("Error updating payment account:", error);
+      throw error;
     }
   }
 }
