@@ -113,7 +113,9 @@ export class MemStorage implements IStorage {
       mobileProvider: "PayMobile",
       mobileNumber: "+1 (555) 987-6543",
       bankEnabled: true,
-      mobileEnabled: true
+      mobileEnabled: true,
+      taxRate: 0.13,
+      serviceFeeRate: 0.04
     });
     
     // Add sample locations
