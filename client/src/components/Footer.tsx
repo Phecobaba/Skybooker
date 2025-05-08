@@ -1,14 +1,84 @@
 import { Link } from "wouter";
 import { Facebook, Twitter, Instagram, Linkedin, MapPin, Phone, Mail } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Footer() {
+  const { data: logoSetting } = useQuery({
+    queryKey: ["/api/site-settings/logo"],
+    queryFn: async ({ signal }) => {
+      const res = await fetch("/api/site-settings/logo", { signal });
+      if (!res.ok) {
+        if (res.status === 404) {
+          return null;
+        }
+        throw new Error("Failed to fetch logo setting");
+      }
+      return await res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
+  const { data: addressSetting } = useQuery({
+    queryKey: ["/api/site-settings/address"],
+    queryFn: async ({ signal }) => {
+      const res = await fetch("/api/site-settings/address", { signal });
+      if (!res.ok) {
+        if (res.status === 404) {
+          return null;
+        }
+        throw new Error("Failed to fetch address setting");
+      }
+      return await res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
+  const { data: phoneSetting } = useQuery({
+    queryKey: ["/api/site-settings/phone"],
+    queryFn: async ({ signal }) => {
+      const res = await fetch("/api/site-settings/phone", { signal });
+      if (!res.ok) {
+        if (res.status === 404) {
+          return null;
+        }
+        throw new Error("Failed to fetch phone setting");
+      }
+      return await res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
+  const { data: emailSetting } = useQuery({
+    queryKey: ["/api/site-settings/email"],
+    queryFn: async ({ signal }) => {
+      const res = await fetch("/api/site-settings/email", { signal });
+      if (!res.ok) {
+        if (res.status === 404) {
+          return null;
+        }
+        throw new Error("Failed to fetch email setting");
+      }
+      return await res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
   return (
     <footer className="bg-gray-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="text-2xl font-bold mb-4">
-              Sky<span className="text-orange-500">Booker</span>
+              {logoSetting?.value ? (
+                <img 
+                  src={logoSetting.value} 
+                  alt="SkyBooker Logo" 
+                  className="h-8 w-auto"
+                />
+              ) : (
+                <span>
+                  Sky<span className="text-orange-500">Booker</span>
+                </span>
+              )}
             </div>
             <p className="text-gray-300 mb-4">
               Book your flights with confidence. Explore the world with our easy and secure booking system.
@@ -107,15 +177,15 @@ export default function Footer() {
             <ul className="space-y-2 text-gray-300">
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                <span>123 Aviation Way, Flight City, FC 10000</span>
+                <span>{addressSetting?.value || "123 Aviation Way, Flight City, FC 10000"}</span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span>+1 (555) 123-4567</span>
+                <span>{phoneSetting?.value || "+1 (555) 123-4567"}</span>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span>support@skybooker.com</span>
+                <span>{emailSetting?.value || "support@skybooker.com"}</span>
               </li>
             </ul>
           </div>

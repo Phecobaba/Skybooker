@@ -791,6 +791,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==== SITE SETTINGS ROUTES ====
+
+  // Get all site settings (public)
+  app.get("/api/site-settings", async (req, res) => {
+    try {
+      const settings = await storage.getSiteSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch site settings" });
+    }
+  });
+
+  // Get site setting by key (public)
+  app.get("/api/site-settings/:key", async (req, res) => {
+    try {
+      const key = req.params.key;
+      const setting = await storage.getSiteSettingByKey(key);
+      
+      if (!setting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.json(setting);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch site setting" });
+    }
+  });
+
+  // Update or create site setting (admin only)
+  app.post("/api/admin/site-settings", isAdmin, async (req, res) => {
+    try {
+      const parseResult = insertSiteSettingSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: "Invalid site setting data", errors: parseResult.error.errors });
+      }
+
+      const setting = await storage.upsertSiteSetting(parseResult.data);
+      res.status(201).json(setting);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update site setting" });
+    }
+  });
+
+  // Delete site setting (admin only)
+  app.delete("/api/admin/site-settings/:key", isAdmin, async (req, res) => {
+    try {
+      const key = req.params.key;
+      const success = await storage.deleteSiteSetting(key);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete site setting" });
+    }
+  });
+
+  // Logo upload endpoint (admin only)
+  app.post("/api/admin/site-settings/logo", isAdmin, upload.single("logo"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Logo file is required" });
+      }
+      
+      const logoPath = `/uploads/${req.file.filename}`;
+      
+      // Save the logo path as a site setting
+      const setting = await storage.upsertSiteSetting({
+        key: "logo",
+        value: logoPath
+      });
+      
+      res.status(201).json(setting);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to upload logo" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

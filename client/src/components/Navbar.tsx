@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,21 @@ export default function Navbar() {
   const { user, logoutMutation } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const { data: logoSetting } = useQuery({
+    queryKey: ["/api/site-settings/logo"],
+    queryFn: async ({ signal }) => {
+      const res = await fetch("/api/site-settings/logo", { signal });
+      if (!res.ok) {
+        if (res.status === 404) {
+          return null;
+        }
+        throw new Error("Failed to fetch logo setting");
+      }
+      return await res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   const handleLogout = () => {
     logoutMutation.mutate();
   };
@@ -32,9 +48,17 @@ export default function Navbar() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <span className="text-2xl font-bold text-primary cursor-pointer">
-                  Sky<span className="text-orange-500">Booker</span>
-                </span>
+                {logoSetting?.value ? (
+                  <img 
+                    src={logoSetting.value} 
+                    alt="SkyBooker Logo" 
+                    className="h-8 w-auto cursor-pointer"
+                  />
+                ) : (
+                  <span className="text-2xl font-bold text-primary cursor-pointer">
+                    Sky<span className="text-orange-500">Booker</span>
+                  </span>
+                )}
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
