@@ -49,7 +49,7 @@ export default function AdminPaymentsPage() {
 
   // Filter bookings - only show pending payments
   const pendingPayments = bookings.filter(
-    (booking) => booking.status === "Pending" && (booking.paymentReference || booking.paymentProof)
+    (booking) => booking.status === "Pending Payment" || (booking.status === "Pending" && (booking.paymentReference || booking.paymentProof))
   );
 
   // Filter for search
@@ -104,7 +104,7 @@ export default function AdminPaymentsPage() {
   const handleApprovePayment = (bookingId: number) => {
     updateBookingStatusMutation.mutate({
       id: bookingId,
-      status: "Confirmed",
+      status: "Paid",
     });
   };
 
