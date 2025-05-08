@@ -19,6 +19,7 @@ import AdminPaymentSettingsPage from "@/pages/admin/payment-settings-page";
 import AdminUsersPage from "@/pages/admin/users-page";
 import AdminAccountSettingsPage from "@/pages/admin/account-settings-page";
 import AdminSiteSettingsPage from "@/pages/admin/site-settings-page";
+import AdminPageContentsPage from "@/pages/admin/page-contents-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import SmartSupp from "@/components/SmartSupp";
@@ -42,6 +43,7 @@ function Router() {
       <ProtectedRoute path="/admin/payment-settings" component={AdminPaymentSettingsPage} adminOnly />
       <ProtectedRoute path="/admin/users" component={AdminUsersPage} adminOnly />
       <ProtectedRoute path="/admin/site-settings" component={AdminSiteSettingsPage} adminOnly />
+      <ProtectedRoute path="/admin/page-contents" component={AdminPageContentsPage} adminOnly />
       <ProtectedRoute path="/admin/settings" component={AdminAccountSettingsPage} adminOnly />
       
       {/* Fallback to 404 */}

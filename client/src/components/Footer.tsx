@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { Facebook, Twitter, Instagram, Linkedin, MapPin, Phone, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { PageContent } from "@shared/schema";
 
 export default function Footer() {
   // Fetch all site settings at once
@@ -16,6 +17,25 @@ export default function Footer() {
         return await res.json();
       } catch (error) {
         console.error("Error fetching site settings:", error);
+        return [];
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
+  // Fetch page contents
+  const { data: pageContents = [] } = useQuery({
+    queryKey: ["/api/page-contents"],
+    queryFn: async ({ signal }) => {
+      try {
+        const res = await fetch("/api/page-contents", { signal });
+        if (!res.ok) {
+          console.error("Error fetching page contents:", await res.text());
+          return [];
+        }
+        return await res.json() as PageContent[];
+      } catch (error) {
+        console.error("Error fetching page contents:", error);
         return [];
       }
     },
@@ -115,26 +135,38 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-lg mb-4">Support</h3>
             <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                  FAQ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                  Terms & Conditions
-                </a>
-              </li>
+              {pageContents && pageContents.length > 0 ? (
+                pageContents.map((page) => (
+                  <li key={page.id}>
+                    <Link href={`/page/${page.slug}`} className="text-gray-300 hover:text-white transition-colors">
+                      {page.title}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>
+                    <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                      Help Center
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                      FAQ
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                      Privacy Policy
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                      Terms & Conditions
+                    </a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
