@@ -31,26 +31,23 @@ import {
 } from "@/components/ui/popover";
 import { Location } from "@shared/schema";
 
-const searchSchema = z.object({
-  tripType: z.enum(["roundTrip", "oneWay"]),
-  origin: z.string().min(1, "Origin is required"),
-  destination: z.string().min(1, "Destination is required").superRefine(
-    (val, ctx) => {
-      if (val === ctx.data.origin) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Origin and destination cannot be the same",
-        });
-        return false;
-      }
-      return true;
+const searchSchema = z
+  .object({
+    tripType: z.enum(["roundTrip", "oneWay"]),
+    origin: z.string().min(1, "Origin is required"),
+    destination: z.string().min(1, "Destination is required"),
+    departureDate: z.date({
+      required_error: "Departure date is required",
+    }),
+    returnDate: z.date().optional(),
+  })
+  .refine(
+    (data) => data.origin !== data.destination,
+    {
+      message: "Origin and destination cannot be the same",
+      path: ["destination"],
     }
-  ),
-  departureDate: z.date({
-    required_error: "Departure date is required",
-  }),
-  returnDate: z.date().optional(),
-});
+  );
 
 type SearchValues = z.infer<typeof searchSchema>;
 
