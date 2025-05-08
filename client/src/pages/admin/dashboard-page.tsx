@@ -253,19 +253,19 @@ export default function AdminDashboardPage() {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <Badge
-                                  variant={
+                                <span
+                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                     booking.status === "Confirmed"
-                                      ? "success"
-                                      : booking.status === "Pending"
-                                      ? "warning"
+                                      ? "bg-green-100 text-green-800"
+                                      : booking.status === "Pending" || booking.status === "Pending Payment"
+                                      ? "bg-yellow-100 text-yellow-800"
                                       : booking.status === "Completed"
-                                      ? "default"
-                                      : "destructive"
-                                  }
+                                      ? "bg-blue-100 text-blue-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
                                 >
                                   {booking.status}
-                                </Badge>
+                                </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 ${booking.flight.price.toFixed(2)}

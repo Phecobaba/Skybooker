@@ -733,6 +733,27 @@ export default function AdminBookingsPage() {
                     </Button>
                   </div>
                 )}
+                
+                {selectedBooking.status === "Pending Payment" && selectedBooking.paymentProof && (
+                  <div className="mt-6 space-y-3">
+                    <Button
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      onClick={() =>
+                        handleStatusChange(selectedBooking.id, "Paid")
+                      }
+                    >
+                      <Check className="mr-2 h-4 w-4" /> Approve Payment
+                    </Button>
+                    <Button
+                      className="w-full bg-red-600 hover:bg-red-700"
+                      onClick={() =>
+                        handleStatusChange(selectedBooking.id, "Declined")
+                      }
+                    >
+                      <X className="mr-2 h-4 w-4" /> Decline Payment
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -886,7 +907,9 @@ export default function AdminBookingsPage() {
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="Pending Payment">Pending Payment</SelectItem>
                   <SelectItem value="Confirmed">Confirmed</SelectItem>
+                  <SelectItem value="Paid">Paid</SelectItem>
                   <SelectItem value="Declined">Declined</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
                 </SelectContent>
