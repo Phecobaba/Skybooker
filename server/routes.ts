@@ -433,22 +433,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Validate that departureTime is before arrivalTime
-      const departureTime = new Date(req.body.departureTime);
-      const arrivalTime = new Date(req.body.arrivalTime);
-      
-      if (isNaN(departureTime.getTime()) || isNaN(arrivalTime.getTime())) {
+      // Do basic validation on dates
+      try {
+        const departureTime = new Date(req.body.departureTime);
+        const arrivalTime = new Date(req.body.arrivalTime);
+        
+        if (isNaN(departureTime.getTime()) || isNaN(arrivalTime.getTime())) {
+          return res.status(400).json({ 
+            message: "Invalid date format for departure or arrival time" 
+          });
+        }
+        
+        if (departureTime >= arrivalTime) {
+          return res.status(400).json({ 
+            message: "Departure time must be before arrival time" 
+          });
+        }
+      } catch (dateErr) {
+        console.error("Date validation error:", dateErr);
         return res.status(400).json({ 
           message: "Invalid date format for departure or arrival time" 
         });
       }
-      
-      if (departureTime >= arrivalTime) {
-        return res.status(400).json({ 
-          message: "Departure time must be before arrival time" 
-        });
-      }
 
+      // Parse with the schema that transforms string dates to Date objects
       const parseResult = insertFlightSchema.safeParse(req.body);
       if (!parseResult.success) {
         console.error("Flight schema validation failed:", parseResult.error.errors);
@@ -483,22 +491,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Validate that departureTime is before arrivalTime
-      const departureTime = new Date(req.body.departureTime);
-      const arrivalTime = new Date(req.body.arrivalTime);
-      
-      if (isNaN(departureTime.getTime()) || isNaN(arrivalTime.getTime())) {
+      // Do basic validation on dates
+      try {
+        const departureTime = new Date(req.body.departureTime);
+        const arrivalTime = new Date(req.body.arrivalTime);
+        
+        if (isNaN(departureTime.getTime()) || isNaN(arrivalTime.getTime())) {
+          return res.status(400).json({ 
+            message: "Invalid date format for departure or arrival time" 
+          });
+        }
+        
+        if (departureTime >= arrivalTime) {
+          return res.status(400).json({ 
+            message: "Departure time must be before arrival time" 
+          });
+        }
+      } catch (dateErr) {
+        console.error("Date validation error:", dateErr);
         return res.status(400).json({ 
           message: "Invalid date format for departure or arrival time" 
         });
       }
-      
-      if (departureTime >= arrivalTime) {
-        return res.status(400).json({ 
-          message: "Departure time must be before arrival time" 
-        });
-      }
 
+      // Parse with the schema that transforms string dates to Date objects
       const parseResult = insertFlightSchema.safeParse(req.body);
       if (!parseResult.success) {
         console.error("Flight schema validation failed:", parseResult.error.errors);

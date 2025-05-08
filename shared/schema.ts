@@ -58,7 +58,13 @@ export const paymentAccounts = pgTable("payment_accounts", {
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertLocationSchema = createInsertSchema(locations).omit({ id: true });
-export const insertFlightSchema = createInsertSchema(flights).omit({ id: true });
+export const baseFlightSchema = createInsertSchema(flights).omit({ id: true });
+
+// Custom flight schema that accepts ISO string dates
+export const insertFlightSchema = baseFlightSchema.extend({
+  departureTime: z.string().transform(val => new Date(val)),
+  arrivalTime: z.string().transform(val => new Date(val)),
+});
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true });
 export const insertPaymentAccountSchema = createInsertSchema(paymentAccounts).omit({ id: true });
 
