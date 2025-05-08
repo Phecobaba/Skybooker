@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearch } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -19,60 +18,11 @@ export default function SearchResultsPage() {
   const returnDate = searchParams.get("returnDate");
   const tripType = searchParams.get("tripType");
   
-  const [formattedOrigin, setFormattedOrigin] = useState<string>("");
-  const [formattedDestination, setFormattedDestination] = useState<string>("");
-
-  // Fetch flights based on search criteria
-  const { data: flights = [], isLoading, error } = useQuery<FlightWithLocations[]>({
-    queryKey: [
-      "/api/flights/search",
-      { origin, destination, departureDate, returnDate }
-    ],
-    queryFn: async ({ queryKey }) => {
-      const params = new URLSearchParams();
-      if (origin) params.set('origin', origin);
-      if (destination) params.set('destination', destination);
-      if (departureDate) params.set('departureDate', departureDate);
-      if (returnDate) params.set('returnDate', returnDate);
-      
-      const response = await fetch(`/api/flights/search?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error(`Error fetching flights: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    enabled: !!origin && !!destination && !!departureDate,
-  });
-
-  // Fetch locations to display full names instead of codes
-  const { data: locations = [] } = useQuery<Location[]>({
-    queryKey: ["/api/locations"],
-  });
-
-  useEffect(() => {
-    if (locations.length > 0) {
-      const originLocation = locations.find((loc: Location) => loc.code === origin);
-      const destinationLocation = locations.find((loc: Location) => loc.code === destination);
-      
-      if (originLocation) {
-        setFormattedOrigin(`${originLocation.city} (${originLocation.code})`);
-      }
-      
-      if (destinationLocation) {
-        setFormattedDestination(`${destinationLocation.city} (${destinationLocation.code})`);
-      }
-    }
-  }, [locations, origin, destination]);
-
-  // Function to find the cheapest flight
-  const getCheapestFlightId = () => {
-    if (!flights.length) return null;
-    return flights.reduce((cheapest, current) => 
-      current.price < cheapest.price ? current : cheapest
-    ).id;
-  };
-
-  const cheapestFlightId = getCheapestFlightId();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [flights, setFlights] = useState<FlightWithLocations[]>([]);
+  const [originName, setOriginName] = useState("");
+  const [destinationName, setDestinationName] = useState("");
   
   // Format dates for display
   const formattedDepartureDate = departureDate 
@@ -87,11 +37,68 @@ export default function SearchResultsPage() {
     ? `${formattedDepartureDate} - ${formattedReturnDate}` 
     : formattedDepartureDate;
 
+  // Function to find the cheapest flight
+  const getCheapestFlightId = () => {
+    if (!flights.length) return null;
+    return flights.reduce((cheapest, current) => 
+      current.price < cheapest.price ? current : cheapest
+    ).id;
+  };
+
+  // Run search when component loads
+  useEffect(() => {
+    // This function is executed when component mounts
+    if (!origin || !destination || !departureDate) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Direct function to fetch data without async/await
+    // to avoid React hook warnings
+    fetch(`/api/locations`)
+      .then(res => res.json())
+      .then(locationsData => {
+        // Find origin and destination locations
+        const originLoc = locationsData.find((loc: any) => loc.code === origin);
+        const destLoc = locationsData.find((loc: any) => loc.code === destination);
+        
+        if (originLoc) {
+          setOriginName(`${originLoc.city} (${originLoc.code})`);
+        }
+        
+        if (destLoc) {
+          setDestinationName(`${destLoc.city} (${destLoc.code})`);
+        }
+        
+        // Construct search URL
+        const params = new URLSearchParams();
+        params.set('origin', origin);
+        params.set('destination', destination);
+        params.set('departureDate', departureDate);
+        if (returnDate) params.set('returnDate', returnDate);
+        
+        // Fetch flights
+        return fetch(`/api/flights/search?${params.toString()}`);
+      })
+      .then(res => res.json())
+      .then(flightData => {
+        setFlights(flightData);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching data:", err);
+        setError(err);
+        setIsLoading(false);
+      });
+  }, [origin, destination, departureDate, returnDate]);
+
+  const cheapestFlightId = getCheapestFlightId();
+
   return (
     <>
       <Helmet>
         <title>Flight Search Results | SkyBooker</title>
-        <meta name="description" content={`Find flights from ${formattedOrigin} to ${formattedDestination} on ${formattedDepartureDate}. Compare prices and book your flight.`} />
+        <meta name="description" content={`Find flights from ${originName} to ${destinationName} on ${formattedDepartureDate}. Compare prices and book your flight.`} />
       </Helmet>
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -99,9 +106,9 @@ export default function SearchResultsPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="border-b border-gray-200 pb-5 mb-5">
               <h2 className="text-2xl font-bold">Flight Search Results</h2>
-              {formattedOrigin && formattedDestination && (
+              {originName && destinationName && (
                 <p className="text-gray-500 mt-1">
-                  {formattedOrigin} to {formattedDestination} • {dateDisplay}
+                  {originName} to {destinationName} • {dateDisplay}
                   {tripType === "oneWay" ? " • One Way" : " • Round Trip"}
                 </p>
               )}
@@ -115,6 +122,7 @@ export default function SearchResultsPage() {
             ) : error ? (
               <div className="text-center py-12">
                 <p className="text-red-500">Error loading flights. Please try again.</p>
+                <p className="text-sm text-gray-500 mt-2">{error.message}</p>
               </div>
             ) : flights.length === 0 ? (
               <div className="text-center py-12">
