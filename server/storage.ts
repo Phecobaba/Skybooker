@@ -57,6 +57,12 @@ export interface IStorage {
   // Payment Accounts
   getPaymentAccounts(): Promise<PaymentAccount[]>;
   updatePaymentAccount(account: InsertPaymentAccount): Promise<PaymentAccount>;
+  
+  // Site Settings
+  getSiteSettings(): Promise<SiteSetting[]>;
+  getSiteSettingByKey(key: string): Promise<SiteSetting | undefined>;
+  upsertSiteSetting(setting: InsertSiteSetting): Promise<SiteSetting>;
+  deleteSiteSetting(key: string): Promise<boolean>;
 
   // Session store
   sessionStore: any; // Using any for session store type to avoid type errors
@@ -68,6 +74,7 @@ export class MemStorage implements IStorage {
   private flights: Map<number, Flight>;
   private bookings: Map<number, Booking>;
   private paymentAccounts: Map<number, PaymentAccount>;
+  private siteSettings: Map<number, SiteSetting>;
   
   sessionStore: any; // Using any for session store type
   
@@ -76,6 +83,7 @@ export class MemStorage implements IStorage {
   currentFlightId: number;
   currentBookingId: number;
   currentPaymentAccountId: number;
+  currentSiteSettingId: number;
 
   constructor() {
     this.users = new Map();

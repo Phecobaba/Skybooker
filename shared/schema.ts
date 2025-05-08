@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -60,6 +60,13 @@ export const paymentAccounts = pgTable("payment_accounts", {
   serviceFeeRate: doublePrecision("service_fee_rate").default(0.04),
 });
 
+export const siteSettings = pgTable("site_settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertLocationSchema = createInsertSchema(locations).omit({ id: true });
@@ -67,6 +74,7 @@ export const insertLocationSchema = createInsertSchema(locations).omit({ id: tru
 export const insertFlightSchema = createInsertSchema(flights).omit({ id: true });
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true });
 export const insertPaymentAccountSchema = createInsertSchema(paymentAccounts).omit({ id: true });
+export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({ id: true, updatedAt: true });
 
 // Login Schema
 export const loginSchema = z.object({
@@ -89,6 +97,9 @@ export type Booking = typeof bookings.$inferSelect;
 
 export type InsertPaymentAccount = z.infer<typeof insertPaymentAccountSchema>;
 export type PaymentAccount = typeof paymentAccounts.$inferSelect;
+
+export type InsertSiteSetting = z.infer<typeof insertSiteSettingSchema>;
+export type SiteSetting = typeof siteSettings.$inferSelect;
 
 export type LoginData = z.infer<typeof loginSchema>;
 
