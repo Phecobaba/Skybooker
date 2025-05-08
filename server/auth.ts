@@ -32,9 +32,9 @@ export async function comparePasswords(supplied: string, stored: string) {
 export function setupAuth(app: Express) {
   // Configure rate limiters
   const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 60 * 1000, // 60 seconds
     max: 5, // Limit each IP to 5 requests per windowMs
-    message: { message: 'Too many login attempts, please try again after 15 minutes' },
+    message: { message: 'Too many login attempts, please try again after 60 seconds' },
     standardHeaders: true,
     legacyHeaders: false,
   });
