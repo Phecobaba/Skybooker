@@ -1,4 +1,4 @@
-import { users, locations, flights, bookings, paymentAccounts } from "@shared/schema";
+import { users, locations, flights, bookings, paymentAccounts, siteSettings } from "@shared/schema";
 import type { 
   User, 
   InsertUser, 
@@ -11,7 +11,9 @@ import type {
   PaymentAccount, 
   InsertPaymentAccount,
   FlightWithLocations,
-  BookingWithDetails
+  BookingWithDetails,
+  SiteSetting,
+  InsertSiteSetting
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -91,12 +93,14 @@ export class MemStorage implements IStorage {
     this.flights = new Map();
     this.bookings = new Map();
     this.paymentAccounts = new Map();
+    this.siteSettings = new Map();
     
     this.currentUserId = 1;
     this.currentLocationId = 1;
     this.currentFlightId = 1;
     this.currentBookingId = 1;
     this.currentPaymentAccountId = 1;
+    this.currentSiteSettingId = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // 24 hours
@@ -601,6 +605,51 @@ export class MemStorage implements IStorage {
     this.paymentAccounts.set(id, updatedAccount);
     
     return updatedAccount;
+  }
+
+  // Site Settings methods
+  async getSiteSettings(): Promise<SiteSetting[]> {
+    return Array.from(this.siteSettings.values());
+  }
+
+  async getSiteSettingByKey(key: string): Promise<SiteSetting | undefined> {
+    return Array.from(this.siteSettings.values()).find(
+      (setting) => setting.key === key
+    );
+  }
+
+  async upsertSiteSetting(setting: InsertSiteSetting): Promise<SiteSetting> {
+    // Check if setting already exists
+    const existingSetting = await this.getSiteSettingByKey(setting.key);
+    
+    if (existingSetting) {
+      // Update existing setting
+      const updatedSetting: SiteSetting = {
+        ...existingSetting,
+        value: setting.value,
+        updatedAt: new Date()
+      };
+      this.siteSettings.set(existingSetting.id, updatedSetting);
+      return updatedSetting;
+    } else {
+      // Create new setting
+      const id = this.currentSiteSettingId++;
+      const newSetting: SiteSetting = {
+        id,
+        ...setting,
+        updatedAt: new Date()
+      };
+      this.siteSettings.set(id, newSetting);
+      return newSetting;
+    }
+  }
+
+  async deleteSiteSetting(key: string): Promise<boolean> {
+    const setting = await this.getSiteSettingByKey(key);
+    if (!setting) {
+      return false;
+    }
+    return this.siteSettings.delete(setting.id);
   }
 }
 
