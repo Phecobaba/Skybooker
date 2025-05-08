@@ -181,6 +181,8 @@ export default function SiteSettingsPage() {
             <AdminHeader 
               title="Site Settings"
               description="Manage your website's appearance and contact information"
+              showBackButton={true}
+              backButtonUrl="/admin"
             />
 
             <Tabs defaultValue="general">
