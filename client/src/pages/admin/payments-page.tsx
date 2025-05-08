@@ -49,9 +49,13 @@ export default function AdminPaymentsPage() {
     ? bookings.find((booking) => booking.id === selectedBookingId)
     : null;
 
-  // Filter bookings - only show pending payments
+  // Filter bookings - show all pending payments regardless of payment reference
   const pendingPayments = bookings.filter(
-    (booking) => booking.status === "Pending Payment" || (booking.status === "Pending" && (booking.paymentReference || booking.paymentProof))
+    (booking) => 
+      // Show all bookings with "Pending Payment" status
+      booking.status === "Pending Payment" || 
+      // Show "Pending" bookings only if they have payment reference or proof
+      (booking.status === "Pending" && (booking.paymentReference || booking.paymentProof))
   );
 
   // Filter for search
@@ -278,10 +282,25 @@ export default function AdminPaymentsPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
-                                  <Badge variant="outline" className="mr-2">
+                                  <Badge 
+                                    variant="outline" 
+                                    className={cn(
+                                      "mr-2", 
+                                      booking.paymentReference 
+                                        ? "bg-green-100 text-green-800" 
+                                        : "bg-yellow-100 text-yellow-800"
+                                    )}
+                                  >
                                     {booking.paymentReference ? 'Has Reference' : 'No Reference'}
                                   </Badge>
-                                  <Badge variant="outline" className={booking.paymentProof ? "bg-green-100 text-green-800" : ""}>
+                                  <Badge 
+                                    variant="outline" 
+                                    className={cn(
+                                      booking.paymentProof 
+                                        ? "bg-green-100 text-green-800" 
+                                        : "bg-yellow-100 text-yellow-800"
+                                    )}
+                                  >
                                     {booking.paymentProof ? 'Has Proof' : 'No Proof'}
                                   </Badge>
                                 </div>
