@@ -111,7 +111,9 @@ export class MemStorage implements IStorage {
       accountNumber: "8762-1095-3321-4000",
       swiftCode: "GTBIUS1234",
       mobileProvider: "PayMobile",
-      mobileNumber: "+1 (555) 987-6543"
+      mobileNumber: "+1 (555) 987-6543",
+      bankEnabled: true,
+      mobileEnabled: true
     });
     
     // Add sample locations
@@ -543,7 +545,9 @@ export class MemStorage implements IStorage {
       accountNumber: account.accountNumber ?? null,
       swiftCode: account.swiftCode ?? null,
       mobileProvider: account.mobileProvider ?? null,
-      mobileNumber: account.mobileNumber ?? null
+      mobileNumber: account.mobileNumber ?? null,
+      bankEnabled: account.bankEnabled === undefined ? true : account.bankEnabled,
+      mobileEnabled: account.mobileEnabled === undefined ? true : account.mobileEnabled
     };
     this.paymentAccounts.set(id, updatedAccount);
     

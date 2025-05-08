@@ -183,7 +183,14 @@ export default function PaymentPage() {
   const totalPrice = calculateTotalPrice(booking.flight.price);
   const taxesAndFees = booking.flight.price * 0.13;
   const serviceFee = booking.flight.price * 0.04;
-  const paymentAccount = paymentAccounts[0];
+  
+  // Get the first payment account
+  const paymentAccount = paymentAccounts.length > 0 ? paymentAccounts[0] : null;
+  
+  // Check if any payment methods are enabled
+  const hasBankEnabled = paymentAccount?.bankEnabled ?? false;
+  const hasMobileEnabled = paymentAccount?.mobileEnabled ?? false;
+  const hasNoPaymentMethodsEnabled = !hasBankEnabled && !hasMobileEnabled;
 
   return (
     <>
@@ -208,20 +215,32 @@ export default function PaymentPage() {
                     <h3 className="text-lg font-bold mb-4">Payment Instructions</h3>
                     
                     <div className="mb-6 border-b pb-4">
-                      <p className="text-gray-700 mb-3">
-                        Please use one of the following payment methods to complete your booking:
-                      </p>
-                      
-                      {paymentAccount ? (
-                        <PaymentMethodCard paymentAccount={paymentAccount} />
-                      ) : (
+                      {hasNoPaymentMethodsEnabled ? (
                         <Alert variant="destructive">
                           <AlertCircle className="h-4 w-4" />
-                          <AlertTitle>Payment information unavailable</AlertTitle>
+                          <AlertTitle>Payment methods unavailable</AlertTitle>
                           <AlertDescription>
-                            Please contact customer support to complete your payment.
+                            All payment methods are currently disabled. Please contact customer support to complete your payment.
                           </AlertDescription>
                         </Alert>
+                      ) : (
+                        <>
+                          <p className="text-gray-700 mb-3">
+                            Please use one of the following payment methods to complete your booking:
+                          </p>
+                          
+                          {paymentAccount ? (
+                            <PaymentMethodCard paymentAccount={paymentAccount} />
+                          ) : (
+                            <Alert variant="destructive">
+                              <AlertCircle className="h-4 w-4" />
+                              <AlertTitle>Payment information unavailable</AlertTitle>
+                              <AlertDescription>
+                                Please contact customer support to complete your payment.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                        </>
                       )}
                     </div>
 
