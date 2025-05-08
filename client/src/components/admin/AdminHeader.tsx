@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ArrowLeft, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +15,12 @@ export default function AdminHeader({
   showBackButton = true, 
   backButtonUrl = "/admin" 
 }: AdminHeaderProps) {
+  const [location] = useLocation();
+  
+  // Don't show the back button on dashboard page
+  const isDashboard = location === "/admin";
+  const shouldShowBackButton = showBackButton && !isDashboard;
+  
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <div>
@@ -23,7 +29,7 @@ export default function AdminHeader({
           <p className="text-muted-foreground mt-1">{description}</p>
         )}
       </div>
-      {showBackButton && (
+      {shouldShowBackButton && (
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 
