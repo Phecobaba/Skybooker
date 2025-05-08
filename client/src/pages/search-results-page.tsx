@@ -25,20 +25,34 @@ export default function SearchResultsPage() {
   // Fetch flights based on search criteria
   const { data: flights = [], isLoading, error } = useQuery<FlightWithLocations[]>({
     queryKey: [
-      `/api/flights/search?origin=${origin}&destination=${destination}&departureDate=${departureDate}`,
+      "/api/flights/search",
+      { origin, destination, departureDate, returnDate }
     ],
+    queryFn: async ({ queryKey }) => {
+      const params = new URLSearchParams();
+      if (origin) params.set('origin', origin);
+      if (destination) params.set('destination', destination);
+      if (departureDate) params.set('departureDate', departureDate);
+      if (returnDate) params.set('returnDate', returnDate);
+      
+      const response = await fetch(`/api/flights/search?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error(`Error fetching flights: ${response.statusText}`);
+      }
+      return response.json();
+    },
     enabled: !!origin && !!destination && !!departureDate,
   });
 
   // Fetch locations to display full names instead of codes
-  const { data: locations = [] } = useQuery({
+  const { data: locations = [] } = useQuery<Location[]>({
     queryKey: ["/api/locations"],
   });
 
   useEffect(() => {
     if (locations.length > 0) {
-      const originLocation = locations.find(loc => loc.code === origin);
-      const destinationLocation = locations.find(loc => loc.code === destination);
+      const originLocation = locations.find((loc: Location) => loc.code === origin);
+      const destinationLocation = locations.find((loc: Location) => loc.code === destination);
       
       if (originLocation) {
         setFormattedOrigin(`${originLocation.city} (${originLocation.code})`);

@@ -34,9 +34,17 @@ import { Location } from "@shared/schema";
 const searchSchema = z.object({
   tripType: z.enum(["roundTrip", "oneWay"]),
   origin: z.string().min(1, "Origin is required"),
-  destination: z.string().min(1, "Destination is required").refine(
-    (val: string, ctx: { data: { origin: string } }) => val !== ctx.data.origin,
-    "Origin and destination cannot be the same"
+  destination: z.string().min(1, "Destination is required").superRefine(
+    (val, ctx) => {
+      if (val === ctx.data.origin) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Origin and destination cannot be the same",
+        });
+        return false;
+      }
+      return true;
+    }
   ),
   departureDate: z.date({
     required_error: "Departure date is required",
@@ -98,7 +106,8 @@ export default function FlightSearchForm() {
     searchParams.set("departureDate", format(values.departureDate, "yyyy-MM-dd"));
     searchParams.set("tripType", values.tripType);
     
-    if (values.returnDate) {
+    // Only add return date if it's a round trip
+    if (values.tripType === "roundTrip" && values.returnDate) {
       searchParams.set("returnDate", format(values.returnDate, "yyyy-MM-dd"));
     }
     
