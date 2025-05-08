@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import AdminSidebar from "@/components/admin/Sidebar";
@@ -15,9 +16,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Form schema for site settings
 const siteSettingSchema = z.object({
-  key: z.string().min(1, "Key is required"),
+  key: z.enum(["address", "phone", "email"]),
   value: z.string().min(1, "Value is required"),
 });
+
+// Key display names mapping
+const keyDisplayNames = {
+  address: "Address",
+  phone: "Phone Number",
+  email: "Email Address"
+};
 
 type SiteSetting = {
   id: number;
@@ -53,7 +61,7 @@ export default function SiteSettingsPage() {
   const form = useForm<z.infer<typeof siteSettingSchema>>({
     resolver: zodResolver(siteSettingSchema),
     defaultValues: {
-      key: "",
+      key: "address" as const,
       value: "",
     },
   });
@@ -69,7 +77,7 @@ export default function SiteSettingsPage() {
         title: "Setting saved",
         description: "The site setting has been successfully saved.",
       });
-      form.reset({ key: "", value: "" });
+      form.reset({ key: "address" as const, value: "" });
       queryClient.invalidateQueries({ queryKey: ["/api/site-settings"] });
     },
     onError: (error) => {
@@ -197,10 +205,22 @@ export default function SiteSettingsPage() {
                             name="key"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Key</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="e.g., address, phone, email" {...field} />
-                                </FormControl>
+                                <FormLabel>Setting Type</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a setting type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="address">Address</SelectItem>
+                                    <SelectItem value="phone">Phone Number</SelectItem>
+                                    <SelectItem value="email">Email Address</SelectItem>
+                                  </SelectContent>
+                                </Select>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -254,7 +274,9 @@ export default function SiteSettingsPage() {
                               className="flex items-center justify-between p-3 border rounded-md bg-muted/20"
                             >
                               <div>
-                                <p className="font-medium">{setting.key}</p>
+                                <p className="font-medium">
+                                  {keyDisplayNames[setting.key as keyof typeof keyDisplayNames] || setting.key}
+                                </p>
                                 <p className="text-sm text-muted-foreground truncate max-w-[200px]">
                                   {setting.value || "(empty)"}
                                 </p>
