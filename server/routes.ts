@@ -14,6 +14,7 @@ import {
   insertPaymentAccountSchema,
   insertUserSchema,
   insertSiteSettingSchema,
+  insertPageContentSchema,
   flightSearchSchema
 } from "@shared/schema";
 
@@ -868,6 +869,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(setting);
     } catch (error) {
       res.status(500).json({ message: "Failed to upload logo" });
+    }
+  });
+  
+  // ===== PAGE CONTENT ROUTES =====
+  
+  // Get all page contents (public)
+  app.get("/api/page-contents", async (req, res) => {
+    try {
+      const contents = await storage.getAllPageContents();
+      res.json(contents);
+    } catch (error) {
+      console.error("Error fetching page contents:", error);
+      res.status(500).json({ message: "Failed to fetch page contents" });
+    }
+  });
+  
+  // Get page content by slug (public)
+  app.get("/api/page-contents/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const content = await storage.getPageContentBySlug(slug);
+      
+      if (!content) {
+        return res.status(404).json({ message: "Page content not found" });
+      }
+      
+      res.json(content);
+    } catch (error) {
+      console.error(`Error fetching page content with slug ${req.params.slug}:`, error);
+      res.status(500).json({ message: "Failed to fetch page content" });
+    }
+  });
+  
+  // Create page content (admin only)
+  app.post("/api/admin/page-contents", isAdmin, async (req, res) => {
+    try {
+      // isAdmin middleware ensures req.user exists
+      const parseResult = insertPageContentSchema.safeParse({
+        ...req.body,
+        updatedBy: req.user!.id
+      });
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid page content data", 
+          errors: parseResult.error.errors 
+        });
+      }
+      
+      // Check if a page with this slug already exists
+      const existingContent = await storage.getPageContentBySlug(parseResult.data.slug);
+      if (existingContent) {
+        return res.status(400).json({ message: "A page with this slug already exists" });
+      }
+      
+      const newContent = await storage.createPageContent(parseResult.data);
+      res.status(201).json(newContent);
+    } catch (error) {
+      console.error("Error creating page content:", error);
+      res.status(500).json({ message: "Failed to create page content" });
+    }
+  });
+  
+  // Update page content (admin only)
+  app.put("/api/admin/page-contents/:id", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const contentData = {
+        ...req.body,
+        updatedBy: req.user!.id,
+        updatedAt: new Date()
+      };
+      
+      // Check if changing slug to one that already exists
+      if (contentData.slug) {
+        const existingContent = await storage.getPageContentBySlug(contentData.slug);
+        if (existingContent && existingContent.id !== parseInt(id)) {
+          return res.status(400).json({ message: "A page with this slug already exists" });
+        }
+      }
+      
+      const updatedContent = await storage.updatePageContent(parseInt(id), contentData);
+      
+      if (!updatedContent) {
+        return res.status(404).json({ message: "Page content not found" });
+      }
+      
+      res.json(updatedContent);
+    } catch (error) {
+      console.error(`Error updating page content with id ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to update page content" });
+    }
+  });
+  
+  // Delete page content (admin only)
+  app.delete("/api/admin/page-contents/:id", isAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deletePageContent(parseInt(id));
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Page content not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error(`Error deleting page content with id ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to delete page content" });
     }
   });
 

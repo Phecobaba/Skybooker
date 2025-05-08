@@ -665,6 +665,53 @@ export class MemStorage implements IStorage {
     }
     return this.siteSettings.delete(setting.id);
   }
+  
+  // Page Content methods
+  async getAllPageContents(): Promise<PageContent[]> {
+    return Array.from(this.pageContents.values());
+  }
+
+  async getPageContentBySlug(slug: string): Promise<PageContent | undefined> {
+    return Array.from(this.pageContents.values()).find(
+      (content) => content.slug === slug
+    );
+  }
+
+  async createPageContent(content: InsertPageContent): Promise<PageContent> {
+    const id = this.currentPageContentId++;
+    const newContent: PageContent = {
+      ...content,
+      id,
+      updatedAt: new Date()
+    };
+    
+    this.pageContents.set(id, newContent);
+    return newContent;
+  }
+
+  async updatePageContent(id: number, content: Partial<InsertPageContent>): Promise<PageContent | undefined> {
+    const existingContent = this.pageContents.get(id);
+    if (!existingContent) {
+      return undefined;
+    }
+    
+    const updatedContent: PageContent = {
+      ...existingContent,
+      ...content,
+      updatedAt: new Date()
+    };
+    
+    this.pageContents.set(id, updatedContent);
+    return updatedContent;
+  }
+
+  async deletePageContent(id: number): Promise<boolean> {
+    const exists = this.pageContents.has(id);
+    if (exists) {
+      this.pageContents.delete(id);
+    }
+    return exists;
+  }
 }
 
 // Import the DatabaseStorage class
