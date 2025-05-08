@@ -40,7 +40,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import AdminLayout from "@/components/AdminLayout";
+import AdminSidebar from "@/components/admin/Sidebar";
 import { Loader2, PlusCircle, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -225,33 +225,41 @@ export default function AdminUsersPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-screen bg-gray-100">
+        <AdminSidebar />
+        <div className="flex-1 overflow-auto">
+          <div className="flex items-center justify-center min-h-screen">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <AdminLayout>
-        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-          <h1 className="text-2xl font-bold text-red-500">Error Loading Users</h1>
-          <p>{(error as Error).message}</p>
-          <Button
-            onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] })}
-          >
-            Try Again
-          </Button>
+      <div className="flex h-screen bg-gray-100">
+        <AdminSidebar />
+        <div className="flex-1 overflow-auto">
+          <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+            <h1 className="text-2xl font-bold text-red-500">Error Loading Users</h1>
+            <p>{(error as Error).message}</p>
+            <Button
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] })}
+            >
+              Try Again
+            </Button>
+          </div>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="container mx-auto py-6">
+    <div className="flex h-screen bg-gray-100">
+      <AdminSidebar />
+      <div className="flex-1 overflow-auto">
+        <div className="container mx-auto py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">User Management</h1>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -581,7 +589,8 @@ export default function AdminUsersPage() {
             </Form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
