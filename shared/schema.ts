@@ -35,6 +35,10 @@ export const flights = pgTable("flights", {
   destinationId: integer("destination_id").notNull().references(() => locations.id),
   departureTime: timestamp("departure_time").notNull(),
   arrivalTime: timestamp("arrival_time").notNull(),
+  // Legacy fields that are still required by the database
+  price: doublePrecision("price").notNull(),
+  capacity: integer("capacity").notNull(),
+  // Class-specific fields
   economyPrice: doublePrecision("economy_price").notNull(),
   businessPrice: doublePrecision("business_price").notNull(),
   firstClassPrice: doublePrecision("first_class_price").notNull(),

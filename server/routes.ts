@@ -730,16 +730,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert string dates to Date objects for the database
       // If economy_price, business_price, and first_class_price are not provided, calculate them from price
       const basePrice = parseFloat(req.body.price || '0');
+      
+      // Handle pricing and capacity
+      const economyPrice = parseFloat(req.body.economyPrice) || basePrice;
+      const businessPrice = parseFloat(req.body.businessPrice) || basePrice * 1.8;
+      const firstClassPrice = parseFloat(req.body.firstClassPrice) || basePrice * 2.5;
+      
+      const economyCapacity = parseInt(req.body.economyCapacity) || 100;
+      const businessCapacity = parseInt(req.body.businessCapacity) || 20;
+      const firstClassCapacity = parseInt(req.body.firstClassCapacity) || 10;
+      
+      // Calculate total capacity - needed for the legacy capacity field
+      const totalCapacity = economyCapacity + businessCapacity + firstClassCapacity;
+      
       const flightData = {
-        ...req.body,
+        originId: parseInt(req.body.originId),
+        destinationId: parseInt(req.body.destinationId),
         departureTime: new Date(req.body.departureTime),
         arrivalTime: new Date(req.body.arrivalTime),
-        economyPrice: req.body.economyPrice || basePrice,
-        businessPrice: req.body.businessPrice || basePrice * 1.8,
-        firstClassPrice: req.body.firstClassPrice || basePrice * 2.5,
-        economyCapacity: req.body.economyCapacity || 100,
-        businessCapacity: req.body.businessCapacity || 20,
-        firstClassCapacity: req.body.firstClassCapacity || 10
+        // Travel class specific prices and capacities
+        economyPrice: economyPrice,
+        businessPrice: businessPrice,
+        firstClassPrice: firstClassPrice,
+        economyCapacity: economyCapacity,
+        businessCapacity: businessCapacity,
+        firstClassCapacity: firstClassCapacity,
+        // Legacy fields required by the database schema
+        price: economyPrice,
+        capacity: totalCapacity
       };
       
       console.log("Transformed flight data:", flightData);
@@ -805,16 +823,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert date strings to Date objects manually before validation
       // If economy_price, business_price, and first_class_price are not provided, calculate them from price
       const basePrice = parseFloat(req.body.price || '0');
+      
+      // Handle pricing and capacity
+      const economyPrice = parseFloat(req.body.economyPrice) || basePrice;
+      const businessPrice = parseFloat(req.body.businessPrice) || basePrice * 1.8;
+      const firstClassPrice = parseFloat(req.body.firstClassPrice) || basePrice * 2.5;
+      
+      const economyCapacity = parseInt(req.body.economyCapacity) || 100;
+      const businessCapacity = parseInt(req.body.businessCapacity) || 20;
+      const firstClassCapacity = parseInt(req.body.firstClassCapacity) || 10;
+      
+      // Calculate total capacity - needed for the legacy capacity field
+      const totalCapacity = economyCapacity + businessCapacity + firstClassCapacity;
+      
       const flightData = {
-        ...req.body,
+        originId: parseInt(req.body.originId),
+        destinationId: parseInt(req.body.destinationId),
         departureTime: new Date(req.body.departureTime),
         arrivalTime: new Date(req.body.arrivalTime),
-        economyPrice: req.body.economyPrice || basePrice,
-        businessPrice: req.body.businessPrice || basePrice * 1.8,
-        firstClassPrice: req.body.firstClassPrice || basePrice * 2.5,
-        economyCapacity: req.body.economyCapacity || 100,
-        businessCapacity: req.body.businessCapacity || 20,
-        firstClassCapacity: req.body.firstClassCapacity || 10
+        // Travel class specific prices and capacities
+        economyPrice: economyPrice,
+        businessPrice: businessPrice,
+        firstClassPrice: firstClassPrice,
+        economyCapacity: economyCapacity,
+        businessCapacity: businessCapacity,
+        firstClassCapacity: firstClassCapacity,
+        // Legacy fields required by the database schema
+        price: economyPrice,
+        capacity: totalCapacity
       };
       
       console.log("Transformed flight data:", flightData);
