@@ -12,7 +12,7 @@ import BookingStatusSteps from "@/components/BookingStatusSteps";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { FlightWithLocations, InsertBooking } from "@shared/schema";
+import { FlightWithLocations, InsertBooking, TravelClass, travelClassSchema } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -23,6 +23,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue 
+} from "@/components/ui/select";
 import { Helmet } from "react-helmet";
 
 const passengerSchema = z.object({
@@ -30,11 +37,14 @@ const passengerSchema = z.object({
   passengerLastName: z.string().min(2, "Last name is required"),
   passengerEmail: z.string().email("Valid email is required"),
   passengerPhone: z.string().min(10, "Valid phone number is required"),
+  travelClass: travelClassSchema,
+  ticketPrice: z.number().positive("Ticket price must be a positive number"),
 });
 
 type PassengerFormValues = z.infer<typeof passengerSchema>;
 
 export default function BookingPage() {
+  const [selectedClass, setSelectedClass] = useState<string>(TravelClass.ECONOMY);
   const { flightId } = useParams();
   const [, navigate] = useLocation();
   const { user } = useAuth();

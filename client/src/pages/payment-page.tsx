@@ -419,8 +419,8 @@ export default function PaymentPage() {
                     
                     <div className="space-y-3 mb-4">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Flight (1 Adult)</span>
-                        <span>${booking.flight.price.toFixed(2)}</span>
+                        <span className="text-gray-600">Flight (1 Adult - {booking.travelClass})</span>
+                        <span>${basePrice.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Taxes & Fees</span>
