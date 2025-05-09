@@ -52,7 +52,7 @@ export const bookings = pgTable("bookings", {
   passengerLastName: text("passenger_last_name").notNull(),
   passengerEmail: text("passenger_email").notNull(),
   passengerPhone: text("passenger_phone").notNull(),
-  travelClass: text("travel_class").notNull().default(TravelClass.ECONOMY),
+  travelClass: text("travel_class").notNull().default("Economy"),
   ticketPrice: doublePrecision("ticket_price").notNull(), // Store the selected class price at time of booking
   status: text("status").notNull().default("Pending"),
   paymentReference: text("payment_reference"),

@@ -238,9 +238,11 @@ export default function PaymentPage() {
   const taxRate = paymentAccount?.taxRate ?? 0.13; // Default to 13% if not set
   const serviceFeeRate = paymentAccount?.serviceFeeRate ?? 0.04; // Default to 4% if not set
   
-  const totalPrice = calculateTotalPrice(booking.flight.price, taxRate, serviceFeeRate);
-  const taxesAndFees = booking.flight.price * taxRate;
-  const serviceFee = booking.flight.price * serviceFeeRate;
+  // Use the ticketPrice stored in the booking record (which is already set based on travel class)
+  const basePrice = booking.ticketPrice;
+  const totalPrice = calculateTotalPrice(basePrice, taxRate, serviceFeeRate);
+  const taxesAndFees = basePrice * taxRate;
+  const serviceFee = basePrice * serviceFeeRate;
   
   // Check if any payment methods are enabled
   const hasBankEnabled = paymentAccount?.bankEnabled ?? false;
