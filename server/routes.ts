@@ -276,6 +276,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin password change endpoint
+  app.put("/api/admin/password", sensitiveApiLimiter, isAdmin, async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+      
+      // Verify current password
+      const passwordValid = await comparePasswords(currentPassword, req.user.password);
+      if (!passwordValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      
+      // Validate new password
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "New password must be at least 6 characters long" });
+      }
+      
+      // Hash and update the password
+      const hashedPassword = await hashPassword(newPassword);
+      const updatedUser = await storage.updateUser(req.user.id, {
+        password: hashedPassword
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      return res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Admin password change error:", error);
+      return res.status(500).json({ message: "Error changing password" });
+    }
+  });
+
   // Get all locations
   app.get("/api/locations", async (req, res) => {
     try {
