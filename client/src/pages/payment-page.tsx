@@ -170,6 +170,16 @@ export default function PaymentPage() {
   const onSubmit = (values: PaymentFormValues) => {
     if (!booking) return;
     
+    // Verify payment file is selected
+    if (!paymentFile) {
+      toast({
+        title: "Payment proof required",
+        description: "Please upload a proof of payment before submitting",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     // Set submitting state to show loading indicator
     setIsSubmitting(true);
     
@@ -181,9 +191,8 @@ export default function PaymentPage() {
       formData.append("paymentReference", values.paymentReference);
     }
     
-    if (paymentFile) {
-      formData.append("paymentProof", paymentFile);
-    }
+    // Add payment file
+    formData.append("paymentProof", paymentFile);
     
     // Submit the payment information
     uploadMutation.mutate({

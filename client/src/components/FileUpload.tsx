@@ -22,11 +22,18 @@ const FileUpload: FC<FileUploadProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(fileUrl || null);
 
+  // Hold a ref to keep track of the selected file
+  const selectedFileRef = useRef<File | null>(null);
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Store the file in state and ref for persistence
     setSelectedFile(file);
+    selectedFileRef.current = file;
+    
+    // Notify parent component
     onFileSelect(file);
 
     // Create a preview URL
@@ -42,11 +49,17 @@ const FileUpload: FC<FileUploadProps> = ({
   };
 
   const handleRemoveFile = () => {
+    // Clear file selection
     setSelectedFile(null);
+    selectedFileRef.current = null;
     setPreviewUrl(null);
+    
+    // Clear the file input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    
+    // Notify parent component if callback exists
     if (onFileRemove) {
       onFileRemove();
     }
