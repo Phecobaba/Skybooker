@@ -82,7 +82,17 @@ export default function SearchResultsPage() {
       })
       .then(res => res.json())
       .then(flightData => {
-        setFlights(flightData);
+        // Ensure flightData is an array
+        if (Array.isArray(flightData)) {
+          setFlights(flightData);
+        } else if (flightData.error) {
+          // Handle API error
+          throw new Error(flightData.error);
+        } else {
+          // Handle unexpected response format
+          console.error("Unexpected response format:", flightData);
+          setFlights([]);
+        }
         setIsLoading(false);
       })
       .catch(err => {
