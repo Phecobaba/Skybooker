@@ -75,11 +75,37 @@ const flightFormSchema = z.object({
   departureTime: z.string(),
   arrivalDate: z.date(),
   arrivalTime: z.string(),
+  // Price fields for each travel class
   price: z.string().refine(value => !isNaN(parseFloat(value)) && parseFloat(value) > 0, {
-    message: "Price must be a positive number",
+    message: "Base price must be a positive number",
   }),
+  economyPrice: z.string().optional().refine(
+    value => !value || (!isNaN(parseFloat(value)) && parseFloat(value) > 0), {
+    message: "Economy price must be a positive number",
+  }),
+  businessPrice: z.string().optional().refine(
+    value => !value || (!isNaN(parseFloat(value)) && parseFloat(value) > 0), {
+    message: "Business price must be a positive number",
+  }),
+  firstClassPrice: z.string().optional().refine(
+    value => !value || (!isNaN(parseFloat(value)) && parseFloat(value) > 0), {
+    message: "First class price must be a positive number",
+  }),
+  // Capacity fields for each travel class
   capacity: z.string().refine(value => !isNaN(parseInt(value)) && parseInt(value) > 0, {
-    message: "Capacity must be a positive number",
+    message: "Total capacity must be a positive number",
+  }),
+  economyCapacity: z.string().optional().refine(
+    value => !value || (!isNaN(parseInt(value)) && parseInt(value) >= 0), {
+    message: "Economy capacity must be a positive number",
+  }),
+  businessCapacity: z.string().optional().refine(
+    value => !value || (!isNaN(parseInt(value)) && parseInt(value) >= 0), {
+    message: "Business capacity must be a positive number",
+  }),
+  firstClassCapacity: z.string().optional().refine(
+    value => !value || (!isNaN(parseInt(value)) && parseInt(value) >= 0), {
+    message: "First class capacity must be a positive number",
   }),
 });
 
@@ -174,7 +200,13 @@ export default function AdminFlightsPage() {
       arrivalDate: new Date(),
       arrivalTime: "12:00",
       price: "0",
+      economyPrice: "0",
+      businessPrice: "0",
+      firstClassPrice: "0",
       capacity: "200",
+      economyCapacity: "100",
+      businessCapacity: "20",
+      firstClassCapacity: "10",
     },
   });
 
@@ -188,8 +220,14 @@ export default function AdminFlightsPage() {
       departureTime: selectedFlight ? format(new Date(selectedFlight.departureTime), "HH:mm") : "10:00",
       arrivalDate: selectedFlight ? new Date(selectedFlight.arrivalTime) : new Date(),
       arrivalTime: selectedFlight ? format(new Date(selectedFlight.arrivalTime), "HH:mm") : "12:00",
-      price: selectedFlight ? selectedFlight.price.toString() : "0",
-      capacity: selectedFlight ? selectedFlight.capacity.toString() : "200",
+      price: "0", // Base price for calculations
+      economyPrice: selectedFlight?.economyPrice?.toString() || "0",
+      businessPrice: selectedFlight?.businessPrice?.toString() || "0",
+      firstClassPrice: selectedFlight?.firstClassPrice?.toString() || "0",
+      capacity: "200", // Total capacity
+      economyCapacity: selectedFlight?.economyCapacity?.toString() || "100",
+      businessCapacity: selectedFlight?.businessCapacity?.toString() || "20",
+      firstClassCapacity: selectedFlight?.firstClassCapacity?.toString() || "10",
     },
   });
 
@@ -203,8 +241,14 @@ export default function AdminFlightsPage() {
         departureTime: format(new Date(selectedFlight.departureTime), "HH:mm"),
         arrivalDate: new Date(selectedFlight.arrivalTime),
         arrivalTime: format(new Date(selectedFlight.arrivalTime), "HH:mm"),
-        price: selectedFlight.price.toString(),
-        capacity: selectedFlight.capacity.toString(),
+        price: "0", // Base price - only used for calculations
+        economyPrice: selectedFlight.economyPrice?.toString() || "0",
+        businessPrice: selectedFlight.businessPrice?.toString() || "0",
+        firstClassPrice: selectedFlight.firstClassPrice?.toString() || "0",
+        capacity: "0", // Total capacity - calculated from the sum
+        economyCapacity: selectedFlight.economyCapacity?.toString() || "0",
+        businessCapacity: selectedFlight.businessCapacity?.toString() || "0",
+        firstClassCapacity: selectedFlight.firstClassCapacity?.toString() || "0",
       });
     }
   }, [selectedFlight, isEditDialogOpen, editForm]);
@@ -297,13 +341,32 @@ export default function AdminFlightsPage() {
     const [arrivalHours, arrivalMinutes] = values.arrivalTime.split(':').map(Number);
     arrivalDateTime.setHours(arrivalHours, arrivalMinutes);
     
+    // Parse price and capacity values
+    const economyPrice = parseFloat(values.economyPrice || values.price);
+    const businessPrice = parseFloat(values.businessPrice || (economyPrice * 2).toString());
+    const firstClassPrice = parseFloat(values.firstClassPrice || (economyPrice * 3).toString());
+    
+    const economyCapacity = parseInt(values.economyCapacity || "120");
+    const businessCapacity = parseInt(values.businessCapacity || "20");
+    const firstClassCapacity = parseInt(values.firstClassCapacity || "10");
+    
+    // Calculate total capacity
+    const totalCapacity = economyCapacity + businessCapacity + firstClassCapacity;
+    
     createFlightMutation.mutate({
       originId: values.originId,
       destinationId: values.destinationId,
       departureTime: departureDateTime.toISOString(),
       arrivalTime: arrivalDateTime.toISOString(),
-      price: parseFloat(values.price),
-      capacity: parseInt(values.capacity),
+      economyPrice: economyPrice,
+      businessPrice: businessPrice, 
+      firstClassPrice: firstClassPrice,
+      economyCapacity: economyCapacity,
+      businessCapacity: businessCapacity,
+      firstClassCapacity: firstClassCapacity,
+      // Keep these for backward compatibility
+      price: economyPrice,
+      capacity: totalCapacity,
     });
   };
 
@@ -319,6 +382,18 @@ export default function AdminFlightsPage() {
     const [arrivalHours, arrivalMinutes] = values.arrivalTime.split(':').map(Number);
     arrivalDateTime.setHours(arrivalHours, arrivalMinutes);
     
+    // Parse price and capacity values
+    const economyPrice = parseFloat(values.economyPrice || values.price);
+    const businessPrice = parseFloat(values.businessPrice || (economyPrice * 2).toString());
+    const firstClassPrice = parseFloat(values.firstClassPrice || (economyPrice * 3).toString());
+    
+    const economyCapacity = parseInt(values.economyCapacity || "120");
+    const businessCapacity = parseInt(values.businessCapacity || "20");
+    const firstClassCapacity = parseInt(values.firstClassCapacity || "10");
+    
+    // Calculate total capacity
+    const totalCapacity = economyCapacity + businessCapacity + firstClassCapacity;
+    
     updateFlightMutation.mutate({
       id: selectedFlightId,
       flightData: {
@@ -326,8 +401,15 @@ export default function AdminFlightsPage() {
         destinationId: values.destinationId,
         departureTime: departureDateTime.toISOString(),
         arrivalTime: arrivalDateTime.toISOString(),
-        price: parseFloat(values.price),
-        capacity: parseInt(values.capacity),
+        economyPrice: economyPrice,
+        businessPrice: businessPrice, 
+        firstClassPrice: firstClassPrice,
+        economyCapacity: economyCapacity,
+        businessCapacity: businessCapacity,
+        firstClassCapacity: firstClassCapacity,
+        // Keep these for backward compatibility
+        price: economyPrice,
+        capacity: totalCapacity,
       },
     });
   };
@@ -491,10 +573,10 @@ export default function AdminFlightsPage() {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ${flight.price.toFixed(2)}
+                                ${flight.economyPrice.toFixed(2)} - ${flight.firstClassPrice.toFixed(2)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {flight.capacity} seats
+                                {flight.economyCapacity + flight.businessCapacity + flight.firstClassCapacity} seats
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <Button
