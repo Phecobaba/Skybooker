@@ -9,9 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, User, ChevronDown, Menu } from "lucide-react";
+import { User, ChevronDown, Menu, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Navbar() {
   const [currentPath] = useLocation();
@@ -114,14 +115,7 @@ export default function Navbar() {
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {user ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative text-gray-400 hover:text-gray-500 focus:outline-none"
-                >
-                  <span className="sr-only">View notifications</span>
-                  <Bell className="h-5 w-5" />
-                </Button>
+                <NotificationBell />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -236,14 +230,9 @@ export default function Navbar() {
                         {user.email}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="ml-auto text-gray-400 hover:text-gray-500"
-                    >
-                      <span className="sr-only">View notifications</span>
-                      <Bell className="h-5 w-5" />
-                    </Button>
+                    <div className="ml-auto">
+                      <NotificationBell />
+                    </div>
                   </div>
                   <div className="mt-3 space-y-1">
                     <Link href="/profile">

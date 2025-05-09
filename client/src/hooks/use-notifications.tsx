@@ -64,7 +64,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           title: "Booking Confirmed",
           message: `Your booking to ${booking.flight.destination.name} has been confirmed!`,
           read: false,
-          timestamp: new Date(booking.statusUpdateDate || booking.bookingDate),
+          timestamp: new Date(booking.bookingDate),
           type: "booking",
           bookingId: booking.id
         });
@@ -77,7 +77,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           title: "Booking Declined",
           message: `Your booking to ${booking.flight.destination.name} has been declined. ${booking.declineReason ? `Reason: ${booking.declineReason}` : ''}`,
           read: false,
-          timestamp: new Date(booking.statusUpdateDate || booking.bookingDate),
+          timestamp: new Date(booking.bookingDate),
           type: "booking",
           bookingId: booking.id
         });
