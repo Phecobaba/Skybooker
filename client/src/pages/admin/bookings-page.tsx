@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2, Search, Eye, Check, X, Filter, CalendarIcon, Trash2 } from "lucide-react";
+import { Loader2, Search, Eye, Check, X, Filter, CalendarIcon, Trash2, XCircle } from "lucide-react";
 import AdminSidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { BookingWithDetails, Location } from "@shared/schema";
@@ -187,8 +187,12 @@ export default function AdminBookingsPage() {
     }
 
     // Status filter
-    if (filterOptions.status !== "all" && booking.status !== filterOptions.status) {
-      return false;
+    if (filterOptions.status !== "all") {
+      if (filterOptions.status === "Pending" && !booking.status.includes("Pending")) {
+        return false;
+      } else if (filterOptions.status !== "Pending" && booking.status !== filterOptions.status) {
+        return false;
+      }
     }
 
     // Origin filter
@@ -275,17 +279,18 @@ export default function AdminBookingsPage() {
   };
 
   const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "Confirmed":
-        return "bg-green-100 text-green-800";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "Declined":
-        return "bg-red-100 text-red-800";
-      case "Completed":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+    if (status === "Confirmed") {
+      return "bg-green-100 text-green-800";
+    } else if (status.includes("Pending")) {
+      return "bg-yellow-100 text-yellow-800";
+    } else if (status === "Declined") {
+      return "bg-red-100 text-red-800";
+    } else if (status === "Paid") {
+      return "bg-blue-100 text-blue-800";
+    } else if (status === "Completed") {
+      return "bg-gray-100 text-gray-800";
+    } else {
+      return "bg-gray-100 text-gray-800";
     }
   };
   
