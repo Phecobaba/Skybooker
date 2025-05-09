@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import PDF service
   const { generateReceiptPdf } = await import("./pdf-service");
   // Initialize email service
-  const { initializeEmailService, sendPaymentConfirmationEmail } = await import("./email-service");
+  const { initializeEmailService, sendPaymentConfirmationEmail, sendBookingStatusUpdateEmail } = await import("./email-service");
   initializeEmailService().catch(error => console.error("Failed to initialize email service:", error));
 
   // ===== USER ROUTES =====
