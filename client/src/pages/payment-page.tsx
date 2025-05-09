@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -49,6 +49,7 @@ export default function PaymentPage() {
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(6);
   const formRef = useRef<HTMLFormElement>(null);
   
   // Steps for the booking process
@@ -83,6 +84,37 @@ export default function PaymentPage() {
       paymentReference: "",
     },
   });
+  
+  // Handle redirect after successful payment submission
+  useEffect(() => {
+    let redirectTimer: number | null = null;
+    let countdownTimer: number | null = null;
+    
+    if (paymentSuccess) {
+      // Start countdown for user feedback
+      countdownTimer = window.setInterval(() => {
+        setRedirectCountdown((prev) => {
+          if (prev <= 1) {
+            // Clear the interval when we reach 0
+            if (countdownTimer) window.clearInterval(countdownTimer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      // Redirect after a delay to ensure user sees the success message
+      redirectTimer = window.setTimeout(() => {
+        navigate("/my-bookings");
+      }, 6000); // 6 seconds to give users time to see success message
+    }
+    
+    // Cleanup function to clear the timers if component unmounts
+    return () => {
+      if (redirectTimer) window.clearTimeout(redirectTimer);
+      if (countdownTimer) window.clearInterval(countdownTimer);
+    };
+  }, [paymentSuccess, navigate]);
 
   // Payment proof upload mutation
   const uploadMutation = useMutation({
@@ -107,16 +139,19 @@ export default function PaymentPage() {
       return await res.json();
     },
     onSuccess: () => {
+      // First set success state
+      setPaymentSuccess(true);
+      
+      // Show toast notification
       toast({
         title: "Payment information submitted",
         description: "Your payment will be verified shortly.",
       });
+      
+      // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
-      setPaymentSuccess(true);
-      // Redirect after short delay to allow user to see success message
-      setTimeout(() => {
-        navigate("/my-bookings");
-      }, 3000);
+      
+      // We'll handle the redirect in a useEffect for better cleanup
     },
     onError: (error: Error) => {
       toast({
@@ -131,9 +166,12 @@ export default function PaymentPage() {
   const onSubmit = (values: PaymentFormValues) => {
     if (!booking) return;
     
+    // Set submitting state to show loading indicator
     setIsSubmitting(true);
     
+    // Create form data with payment information
     const formData = new FormData();
+    
     // Only append paymentReference if provided
     if (values.paymentReference) {
       formData.append("paymentReference", values.paymentReference);
@@ -143,10 +181,14 @@ export default function PaymentPage() {
       formData.append("paymentProof", paymentFile);
     }
     
+    // Submit the payment information
     uploadMutation.mutate({
       bookingId: booking.id,
       formData,
     });
+    
+    // Return false to prevent default form submission
+    return false;
   };
 
   const handleFileSelect = (file: File) => {
@@ -217,13 +259,13 @@ export default function PaymentPage() {
               {/* Booking Steps */}
               <BookingStatusSteps steps={steps} className="mb-8" />
 
-              {/* Payment Success Message */}
+              {/* Payment Success Message - Made more prominent */}
               {paymentSuccess && (
                 <div className="mb-8">
-                  <Alert className="bg-green-50 border-green-200">
-                    <Check className="h-5 w-5 text-green-600" />
-                    <AlertTitle className="text-green-800 text-xl font-bold">Payment Submitted Successfully!</AlertTitle>
-                    <AlertDescription className="text-green-700">
+                  <Alert className="bg-green-100 border-green-500 shadow-lg">
+                    <Check className="h-6 w-6 text-green-600" />
+                    <AlertTitle className="text-green-800 text-2xl font-bold">Payment Submitted Successfully!</AlertTitle>
+                    <AlertDescription className="text-green-700 text-lg">
                       <p className="mb-2">Your payment proof has been submitted and is being processed. You will be redirected to your bookings page in a moment...</p>
                       <p>You will receive an email confirmation once your payment is verified.</p>
                     </AlertDescription>
@@ -342,13 +384,17 @@ export default function PaymentPage() {
                     )}
                     
                     {paymentSuccess && (
-                      <div className="py-8 flex flex-col items-center justify-center">
-                        <div className="bg-green-100 rounded-full p-3 mb-4">
-                          <Check className="h-12 w-12 text-green-600" />
+                      <div className="py-8 flex flex-col items-center justify-center bg-green-50 rounded-lg border-2 border-green-500">
+                        <div className="bg-green-100 rounded-full p-4 mb-4">
+                          <Check className="h-16 w-16 text-green-600" />
                         </div>
-                        <h3 className="text-xl font-bold text-center mb-2">Payment Submitted!</h3>
+                        <h3 className="text-2xl font-bold text-center mb-3 text-green-800">Payment Submitted!</h3>
+                        <p className="text-center text-green-700 text-lg px-8 mb-4">
+                          Your payment proof has been submitted successfully. You will be redirected to your bookings page in a moment.
+                        </p>
+                        <div className="w-16 h-1 bg-green-500 mb-3"></div>
                         <p className="text-center text-gray-600">
-                          You will be redirected to your bookings page in a moment.
+                          Thank you for choosing SkyBooker!
                         </p>
                       </div>
                     )}
