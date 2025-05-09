@@ -501,6 +501,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Processing payment for booking ${bookingId} with reference ${paymentReference}`);
       
+      // First, change booking status to "Pending Payment"
+      await storage.updateBookingStatus(bookingId, "Pending Payment");
+      
       // Update booking with payment info
       const updatedBooking = await storage.updateBookingPayment(bookingId, {
         paymentReference,
@@ -510,23 +513,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Return the response immediately
       res.json(updatedBooking);
       
-      // Handle additional processing asynchronously after response is sent
-      if (updatedBooking && updatedBooking.status.toLowerCase() === "paid") {
-        // Use a "fire and forget" approach for post-processing
+      // Use setTimeout to ensure this runs in a separate event loop cycle,
+      // making it truly non-blocking
+      setTimeout(() => {
+        // Handle additional processing asynchronously after response is sent
         (async () => {
           try {
             // Get full booking details with relations for the background process
             const fullBooking = await storage.getBookingById(bookingId);
-            if (fullBooking && !fullBooking.receiptPath) {
-              console.log(`Generating receipt for booking ${bookingId} in background`);
-              const receiptPath = await generateReceiptPdf(fullBooking);
-              await storage.updateBookingReceipt(bookingId, receiptPath);
+            
+            // First change status to "Paid"
+            if (fullBooking) {
+              await storage.updateBookingStatus(bookingId, "Paid");
+              
+              // Generate receipt if needed
+              if (!fullBooking.receiptPath) {
+                console.log(`Generating receipt for booking ${bookingId} in background`);
+                const receiptPath = await generateReceiptPdf(fullBooking);
+                await storage.updateBookingReceipt(bookingId, receiptPath);
+                
+                // Get updated booking with receipt path
+                const updatedBookingWithReceipt = await storage.getBookingById(bookingId);
+                
+                // Send payment confirmation email in the background
+                if (updatedBookingWithReceipt) {
+                  try {
+                    await sendPaymentConfirmationEmail(updatedBookingWithReceipt);
+                    console.log(`Payment confirmation email sent for booking ID: ${bookingId}`);
+                  } catch (emailError) {
+                    console.error("Failed to send payment confirmation email:", emailError);
+                  }
+                }
+              }
             }
           } catch (genError) {
             console.error("Error in background receipt generation:", genError);
           }
         })().catch(err => console.error("Background processing error:", err));
-      }
+      }, 100); // Small delay to ensure the HTTP response is sent first
     } catch (error) {
       console.error("Payment processing error:", error);
       res.status(500).json({ message: "Failed to update payment" });
@@ -947,45 +971,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Return response immediately to improve performance
       res.json(updatedBooking);
       
-      // Handle all post-processing tasks asynchronously after sending response
-      (async () => {
-        try {
-          // If status has changed, send status update email
-          if (status !== previousStatus) {
-            const fullBooking = await storage.getBookingById(bookingId);
-            if (fullBooking) {
-              // Send status update notification
-              try {
-                await sendBookingStatusUpdateEmail(fullBooking, previousStatus);
-                console.log(`Status update email sent for booking ID: ${bookingId} (${previousStatus} -> ${status})`);
-              } catch (emailErr) {
-                console.error("Failed to send status update email:", emailErr);
-              }
-              
-              // If status changed to "Paid", generate receipt asynchronously
-              if (status === "Paid" && previousStatus !== "Paid") {
+      // Use setTimeout to ensure this runs in a separate event loop cycle,
+      // making it truly non-blocking
+      setTimeout(() => {
+        // Handle all post-processing tasks asynchronously after sending response
+        (async () => {
+          try {
+            // If status has changed, send status update email
+            if (status !== previousStatus) {
+              const fullBooking = await storage.getBookingById(bookingId);
+              if (fullBooking) {
+                // Send status update notification
                 try {
-                  console.log(`Generating receipt for booking ${bookingId} in background`);
-                  const receiptPath = await generateReceiptPdf(fullBooking);
-                  await storage.updateBookingReceipt(bookingId, receiptPath);
-                  
-                  // Send payment confirmation email with receipt
+                  await sendBookingStatusUpdateEmail(fullBooking, previousStatus);
+                  console.log(`Status update email sent for booking ID: ${bookingId} (${previousStatus} -> ${status})`);
+                } catch (emailErr) {
+                  console.error("Failed to send status update email:", emailErr);
+                }
+                
+                // If status changed to "Paid", generate receipt asynchronously
+                if (status === "Paid" && previousStatus !== "Paid") {
                   try {
-                    await sendPaymentConfirmationEmail(fullBooking);
-                    console.log(`Payment confirmation email sent for booking ID: ${bookingId}`);
-                  } catch (paymentEmailErr) {
-                    console.error("Failed to send payment confirmation email:", paymentEmailErr);
+                    console.log(`Generating receipt for booking ${bookingId} in background`);
+                    const receiptPath = await generateReceiptPdf(fullBooking);
+                    await storage.updateBookingReceipt(bookingId, receiptPath);
+                    
+                    // Get updated booking with receipt path
+                    const updatedBookingWithReceipt = await storage.getBookingById(bookingId);
+                    
+                    // Send payment confirmation email with receipt as a separate step
+                    // to avoid generating the PDF twice unnecessarily
+                    if (updatedBookingWithReceipt) {
+                      try {
+                        await sendPaymentConfirmationEmail(updatedBookingWithReceipt);
+                        console.log(`Payment confirmation email sent for booking ID: ${bookingId}`);
+                      } catch (paymentEmailErr) {
+                        console.error("Failed to send payment confirmation email:", paymentEmailErr);
+                      }
+                    }
+                  } catch (genError) {
+                    console.error("Error in background receipt generation:", genError);
                   }
-                } catch (genError) {
-                  console.error("Error in background receipt generation:", genError);
                 }
               }
             }
+          } catch (postProcessError) {
+            console.error("Error in status update post-processing:", postProcessError);
           }
-        } catch (postProcessError) {
-          console.error("Error in status update post-processing:", postProcessError);
-        }
-      })().catch(err => console.error("Background processing error:", err));
+        })().catch(err => console.error("Background processing error:", err));
+      }, 100); // Small delay to ensure the HTTP response is sent first
     } catch (error) {
       res.status(500).json({ message: "Failed to update booking status" });
     }
