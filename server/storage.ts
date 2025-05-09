@@ -560,6 +560,8 @@ export class MemStorage implements IStorage {
       passengerLastName: insertBooking.passengerLastName,
       passengerEmail: insertBooking.passengerEmail,
       passengerPhone: insertBooking.passengerPhone,
+      travelClass: insertBooking.travelClass || "Economy", // Default to Economy if not specified
+      ticketPrice: insertBooking.ticketPrice || 0, // Should always be specified, but default to 0 for safety
       status: "Pending",
       paymentReference: null,
       paymentProof: null,
@@ -663,8 +665,10 @@ export class MemStorage implements IStorage {
       accountName: account.accountName ?? null,
       accountNumber: account.accountNumber ?? null,
       swiftCode: account.swiftCode ?? null,
+      bankInstructions: account.bankInstructions ?? "Please include your booking reference in the payment description.",
       mobileProvider: account.mobileProvider ?? null,
       mobileNumber: account.mobileNumber ?? null,
+      mobileInstructions: account.mobileInstructions ?? "Upload a screenshot of the payment confirmation.",
       bankEnabled: account.bankEnabled === undefined ? true : account.bankEnabled,
       mobileEnabled: account.mobileEnabled === undefined ? true : account.mobileEnabled,
       taxRate: account.taxRate === undefined ? 0.13 : account.taxRate,
