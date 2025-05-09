@@ -378,7 +378,7 @@ export default function AdminBookingsPage() {
                   </Button>
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-6 space-y-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
@@ -389,6 +389,20 @@ export default function AdminBookingsPage() {
                       onChange={(e) => setSearchText(e.target.value)}
                     />
                   </div>
+                  
+                  {filteredBookings.length > 0 && (
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={confirmBulkDelete}
+                        disabled={selectedBookings.length === 0}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete Selected ({selectedBookings.length})
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {isLoading ? (
@@ -430,6 +444,17 @@ export default function AdminBookingsPage() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
+                            <th
+                              scope="col"
+                              className="pl-4 pr-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              <input
+                                type="checkbox"
+                                className="form-checkbox h-4 w-4 text-primary rounded border-gray-300"
+                                checked={selectedBookings.length === currentBookings.length && currentBookings.length > 0}
+                                onChange={toggleAllBookings}
+                              />
+                            </th>
                             <th
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -476,7 +501,15 @@ export default function AdminBookingsPage() {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {currentBookings.map((booking) => (
-                            <tr key={booking.id}>
+                            <tr key={booking.id} className={selectedBookings.includes(booking.id) ? "bg-blue-50" : ""}>
+                              <td className="pl-4 pr-2 py-4">
+                                <input
+                                  type="checkbox"
+                                  className="form-checkbox h-4 w-4 text-primary rounded border-gray-300"
+                                  checked={selectedBookings.includes(booking.id)}
+                                  onChange={() => toggleBookingSelection(booking.id)}
+                                />
+                              </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm font-medium text-gray-900">
                                   #BK-{booking.id}
@@ -585,6 +618,14 @@ export default function AdminBookingsPage() {
                                       </Button>
                                     </>
                                   )}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex items-center text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                                    onClick={() => confirmDeleteBooking(booking.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                                  </Button>
                                 </div>
                               </td>
                             </tr>
@@ -723,6 +764,70 @@ export default function AdminBookingsPage() {
           </main>
         </div>
       </div>
+
+      {/* Single Delete Confirmation */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Booking</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this booking? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => {
+                if (selectedBookingId) {
+                  deleteBookingMutation.mutate(selectedBookingId);
+                }
+              }}
+            >
+              {deleteBookingMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Booking"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={isBulkDeleteDialogOpen} onOpenChange={setIsBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Multiple Bookings</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedBookings.length} selected bookings? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => {
+                if (selectedBookings.length > 0) {
+                  bulkDeleteBookingsMutation.mutate(selectedBookings);
+                }
+              }}
+            >
+              {bulkDeleteBookingsMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Bookings"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Booking Detail Modal */}
       {selectedBooking && (
