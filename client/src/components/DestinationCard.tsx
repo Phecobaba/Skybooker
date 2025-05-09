@@ -31,25 +31,25 @@ const DestinationCard: FC<DestinationCardProps> = ({
 
 const popularDestinations = [
   {
-    imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=350",
+    imageUrl: "/images/destinations/paris.jpg",
     city: "Paris",
     country: "France",
     price: 399
   },
   {
-    imageUrl: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=350",
+    imageUrl: "/images/destinations/tokyo.jpg",
     city: "Tokyo",
     country: "Japan",
     price: 799
   },
   {
-    imageUrl: "https://images.unsplash.com/photo-1552074284-5e88ef1aef18?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=350",
+    imageUrl: "/images/destinations/cancun.jpg",
     city: "Cancun",
     country: "Mexico",
     price: 299
   },
   {
-    imageUrl: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=350",
+    imageUrl: "/images/destinations/dubai.jpg",
     city: "Dubai",
     country: "UAE",
     price: 549
