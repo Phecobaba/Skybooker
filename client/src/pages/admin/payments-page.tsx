@@ -93,7 +93,9 @@ export default function AdminPaymentsPage() {
       return await res.json();
     },
     onSuccess: () => {
+      // Invalidate both admin and user bookings queries to ensure both views are updated
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
       toast({
         title: "Payment status updated",
         description: "The payment status has been updated successfully",
