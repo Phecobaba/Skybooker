@@ -878,17 +878,115 @@ export default function AdminFlightsPage() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="border p-4 rounded-lg mb-2">
+                <h3 className="font-medium mb-3 text-primary">Economy Class</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="economyPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Economy Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="economyCapacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Economy Capacity (seats)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              <div className="border p-4 rounded-lg mb-2">
+                <h3 className="font-medium mb-3 text-primary">Business Class</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="businessPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="businessCapacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Capacity (seats)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              <div className="border p-4 rounded-lg mb-2">
+                <h3 className="font-medium mb-3 text-primary">First Class</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="firstClassPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Class Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="firstClassCapacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Class Capacity (seats)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              {/* Keep legacy price/capacity fields hidden for backward compatibility */}
+              <div className="hidden">
                 <FormField
                   control={addForm.control}
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price ($)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="0" step="0.01" {...field} />
+                        <Input type="hidden" {...field} />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -898,11 +996,9 @@ export default function AdminFlightsPage() {
                   name="capacity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Capacity (seats)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="1" {...field} />
+                        <Input type="hidden" {...field} />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -1119,17 +1215,115 @@ export default function AdminFlightsPage() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="border p-4 rounded-lg mb-2">
+                <h3 className="font-medium mb-3 text-primary">Economy Class</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="economyPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Economy Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="economyCapacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Economy Capacity (seats)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              <div className="border p-4 rounded-lg mb-2">
+                <h3 className="font-medium mb-3 text-primary">Business Class</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="businessPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="businessCapacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Capacity (seats)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              <div className="border p-4 rounded-lg mb-2">
+                <h3 className="font-medium mb-3 text-primary">First Class</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="firstClassPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Class Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="firstClassCapacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Class Capacity (seats)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              {/* Keep legacy price/capacity fields hidden for backward compatibility */}
+              <div className="hidden">
                 <FormField
                   control={editForm.control}
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price ($)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="0" step="0.01" {...field} />
+                        <Input type="hidden" {...field} />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -1139,11 +1333,9 @@ export default function AdminFlightsPage() {
                   name="capacity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Capacity (seats)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="1" {...field} />
+                        <Input type="hidden" {...field} />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
