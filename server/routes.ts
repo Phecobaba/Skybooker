@@ -728,10 +728,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Convert string dates to Date objects for the database
+      // If economy_price, business_price, and first_class_price are not provided, calculate them from price
+      const basePrice = parseFloat(req.body.price || '0');
       const flightData = {
         ...req.body,
         departureTime: new Date(req.body.departureTime),
-        arrivalTime: new Date(req.body.arrivalTime)
+        arrivalTime: new Date(req.body.arrivalTime),
+        economyPrice: req.body.economyPrice || basePrice,
+        businessPrice: req.body.businessPrice || basePrice * 1.8,
+        firstClassPrice: req.body.firstClassPrice || basePrice * 2.5,
+        economyCapacity: req.body.economyCapacity || 100,
+        businessCapacity: req.body.businessCapacity || 20,
+        firstClassCapacity: req.body.firstClassCapacity || 10
       };
       
       console.log("Transformed flight data:", flightData);
@@ -795,10 +803,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Convert date strings to Date objects manually before validation
+      // If economy_price, business_price, and first_class_price are not provided, calculate them from price
+      const basePrice = parseFloat(req.body.price || '0');
       const flightData = {
         ...req.body,
         departureTime: new Date(req.body.departureTime),
-        arrivalTime: new Date(req.body.arrivalTime)
+        arrivalTime: new Date(req.body.arrivalTime),
+        economyPrice: req.body.economyPrice || basePrice,
+        businessPrice: req.body.businessPrice || basePrice * 1.8,
+        firstClassPrice: req.body.firstClassPrice || basePrice * 2.5,
+        economyCapacity: req.body.economyCapacity || 100,
+        businessCapacity: req.body.businessCapacity || 20,
+        firstClassCapacity: req.body.firstClassCapacity || 10
       };
       
       console.log("Transformed flight data:", flightData);
