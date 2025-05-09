@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2, Search, Eye, Check, X, Filter, CalendarIcon } from "lucide-react";
+import { Loader2, Search, Eye, Check, X, Filter, CalendarIcon, Trash2 } from "lucide-react";
 import AdminSidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { BookingWithDetails, Location } from "@shared/schema";
@@ -19,6 +19,16 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -56,7 +66,10 @@ export default function AdminBookingsPage() {
   });
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
+  const [selectedBookings, setSelectedBookings] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -101,6 +114,54 @@ export default function AdminBookingsPage() {
     onError: (error: Error) => {
       toast({
         title: "Error updating booking status",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Delete booking mutation
+  const deleteBookingMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await apiRequest("DELETE", `/api/admin/bookings/${id}`);
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+      toast({
+        title: "Booking deleted",
+        description: "The booking has been permanently deleted",
+      });
+      setIsDeleteDialogOpen(false);
+      setSelectedBookingId(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error deleting booking",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Bulk delete bookings mutation
+  const bulkDeleteBookingsMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const res = await apiRequest("DELETE", `/api/admin/bookings/bulk`, { ids });
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+      toast({
+        title: "Bookings deleted",
+        description: `Successfully deleted ${selectedBookings.length} bookings`,
+      });
+      setIsBulkDeleteDialogOpen(false);
+      setSelectedBookings([]);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error deleting bookings",
         description: error.message,
         variant: "destructive",
       });
@@ -225,6 +286,41 @@ export default function AdminBookingsPage() {
         return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+  
+  const toggleBookingSelection = (bookingId: number) => {
+    setSelectedBookings(prev => {
+      if (prev.includes(bookingId)) {
+        return prev.filter(id => id !== bookingId);
+      } else {
+        return [...prev, bookingId];
+      }
+    });
+  };
+  
+  const toggleAllBookings = () => {
+    if (selectedBookings.length === currentBookings.length) {
+      setSelectedBookings([]);
+    } else {
+      setSelectedBookings(currentBookings.map(booking => booking.id));
+    }
+  };
+  
+  const confirmDeleteBooking = (id: number) => {
+    setSelectedBookingId(id);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmBulkDelete = () => {
+    if (selectedBookings.length > 0) {
+      setIsBulkDeleteDialogOpen(true);
+    } else {
+      toast({
+        title: "No bookings selected",
+        description: "Please select at least one booking to delete",
+        variant: "destructive",
+      });
     }
   };
 
