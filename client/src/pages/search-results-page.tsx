@@ -41,7 +41,7 @@ export default function SearchResultsPage() {
   const getCheapestFlightId = () => {
     if (!flights.length) return null;
     return flights.reduce((cheapest, current) => 
-      current.price < cheapest.price ? current : cheapest
+      current.economyPrice < cheapest.economyPrice ? current : cheapest
     ).id;
   };
 
