@@ -2,6 +2,15 @@ import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, js
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Define Travel Class enum
+export const TravelClass = {
+  ECONOMY: "Economy",
+  BUSINESS: "Business",
+  FIRST_CLASS: "First Class"
+} as const;
+
+export type TravelClassType = typeof TravelClass[keyof typeof TravelClass];
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -26,8 +35,12 @@ export const flights = pgTable("flights", {
   destinationId: integer("destination_id").notNull().references(() => locations.id),
   departureTime: timestamp("departure_time").notNull(),
   arrivalTime: timestamp("arrival_time").notNull(),
-  price: doublePrecision("price").notNull(),
-  capacity: integer("capacity").notNull(),
+  economyPrice: doublePrecision("economy_price").notNull(),
+  businessPrice: doublePrecision("business_price").notNull(),
+  firstClassPrice: doublePrecision("first_class_price").notNull(),
+  economyCapacity: integer("economy_capacity").notNull(),
+  businessCapacity: integer("business_capacity").notNull(),
+  firstClassCapacity: integer("first_class_capacity").notNull(),
 });
 
 export const bookings = pgTable("bookings", {
@@ -39,6 +52,8 @@ export const bookings = pgTable("bookings", {
   passengerLastName: text("passenger_last_name").notNull(),
   passengerEmail: text("passenger_email").notNull(),
   passengerPhone: text("passenger_phone").notNull(),
+  travelClass: text("travel_class").notNull().default(TravelClass.ECONOMY),
+  ticketPrice: doublePrecision("ticket_price").notNull(), // Store the selected class price at time of booking
   status: text("status").notNull().default("Pending"),
   paymentReference: text("payment_reference"),
   paymentProof: text("payment_proof"),
@@ -87,6 +102,13 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true 
 export const insertPaymentAccountSchema = createInsertSchema(paymentAccounts).omit({ id: true });
 export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({ id: true, updatedAt: true });
 export const insertPageContentSchema = createInsertSchema(pageContents).omit({ id: true, updatedAt: true });
+
+// Travel class schema validation
+export const travelClassSchema = z.enum([
+  TravelClass.ECONOMY,
+  TravelClass.BUSINESS,
+  TravelClass.FIRST_CLASS
+]);
 
 // Login Schema
 export const loginSchema = z.object({

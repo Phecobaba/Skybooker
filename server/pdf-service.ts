@@ -119,17 +119,20 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
         .text('Payment Status:', { continued: true, indent: 10 })
         .text(`  ${booking.status}`, { align: 'right' })
         .text('Payment Reference:', { continued: true, indent: 10 })
-        .text(`  ${booking.paymentReference || 'N/A'}`, { align: 'right' });
+        .text(`  ${booking.paymentReference || 'N/A'}`, { align: 'right' })
+        .text('Travel Class:', { continued: true, indent: 10 })
+        .text(`  ${booking.travelClass}`, { align: 'right' });
       
-      const taxesAndFees = flight.price * taxRate;
-      const serviceFee = flight.price * serviceFeeRate;
-      const totalAmount = flight.price + taxesAndFees + serviceFee;
+      const basePrice = booking.ticketPrice;
+      const taxesAndFees = basePrice * taxRate;
+      const serviceFee = basePrice * serviceFeeRate;
+      const totalAmount = basePrice + taxesAndFees + serviceFee;
       
       // Price breakdown
       doc.moveDown()
         .fontSize(10)
         .text('Base Fare:', { continued: true, indent: 10 })
-        .text(`  $${flight.price.toFixed(2)}`, { align: 'right' })
+        .text(`  $${basePrice.toFixed(2)}`, { align: 'right' })
         .text('Taxes & Fees:', { continued: true, indent: 10 })
         .text(`  $${taxesAndFees.toFixed(2)}`, { align: 'right' })
         .text('Service Fee:', { continued: true, indent: 10 })
