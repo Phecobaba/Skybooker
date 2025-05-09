@@ -345,20 +345,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Search flights
   app.get("/api/flights/search", async (req, res) => {
     try {
+      console.log("Searching flights with query:", req.query);
       const parseResult = flightSearchSchema.safeParse(req.query);
       if (!parseResult.success) {
+        console.error("Invalid search parameters:", parseResult.error.errors);
         return res.status(400).json({ message: "Invalid search parameters", errors: parseResult.error.errors });
       }
 
       const params = parseResult.data;
-      const flights = await storage.searchFlights(
-        params.origin,
-        params.destination,
-        new Date(params.departureDate)
-      );
+      console.log("Validated parameters:", params);
       
-      res.json(flights);
+      try {
+        const flights = await storage.searchFlights(
+          params.origin,
+          params.destination,
+          new Date(params.departureDate)
+        );
+        
+        console.log(`Found ${flights.length} flights for search`);
+        res.json(flights || []);
+      } catch (searchError) {
+        console.error("Error searching flights:", searchError);
+        throw searchError;
+      }
     } catch (error) {
+      console.error("Flight search error:", error);
       res.status(500).json({ message: "Failed to search flights" });
     }
   });

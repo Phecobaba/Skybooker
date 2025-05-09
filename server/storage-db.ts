@@ -208,25 +208,41 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async enhanceFlightWithLocations(flight: Flight): Promise<FlightWithLocations> {
-    const [origin] = await db
-      .select()
-      .from(locations)
-      .where(eq(locations.id, flight.originId));
-    
-    const [destination] = await db
-      .select()
-      .from(locations)
-      .where(eq(locations.id, flight.destinationId));
-    
-    if (!origin || !destination) {
-      throw new Error(`Could not find origin or destination for flight ${flight.id}`);
+    try {
+      console.log(`Enhancing flight ${flight.id} with location details`);
+      
+      // Get origin location
+      const [origin] = await db
+        .select()
+        .from(locations)
+        .where(eq(locations.id, flight.originId));
+      
+      if (!origin) {
+        console.error(`Could not find origin location with ID ${flight.originId} for flight ${flight.id}`);
+        throw new Error(`Origin location not found for flight ${flight.id}`);
+      }
+      
+      // Get destination location
+      const [destination] = await db
+        .select()
+        .from(locations)
+        .where(eq(locations.id, flight.destinationId));
+      
+      if (!destination) {
+        console.error(`Could not find destination location with ID ${flight.destinationId} for flight ${flight.id}`);
+        throw new Error(`Destination location not found for flight ${flight.id}`);
+      }
+      
+      // Return enhanced flight with locations
+      return {
+        ...flight,
+        origin,
+        destination
+      };
+    } catch (error) {
+      console.error(`Error enhancing flight ${flight.id} with locations:`, error);
+      throw error;
     }
-    
-    return {
-      ...flight,
-      origin,
-      destination
-    };
   }
 
   async createFlight(insertFlight: InsertFlight): Promise<Flight> {
@@ -266,43 +282,77 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchFlights(originCode: string, destinationCode: string, date: Date): Promise<FlightWithLocations[]> {
-    // Find location IDs by code
-    const [origin] = await db
-      .select()
-      .from(locations)
-      .where(eq(locations.code, originCode));
-    
-    const [destination] = await db
-      .select()
-      .from(locations)
-      .where(eq(locations.code, destinationCode));
-    
-    if (!origin || !destination) {
-      return [];
+    try {
+      console.log(`Searching flights from ${originCode} to ${destinationCode} on ${date.toISOString()}`);
+      
+      // Find origin location by code
+      const [origin] = await db
+        .select()
+        .from(locations)
+        .where(eq(locations.code, originCode));
+      
+      if (!origin) {
+        console.log(`Origin location with code ${originCode} not found`);
+        return [];
+      }
+      
+      // Find destination location by code
+      const [destination] = await db
+        .select()
+        .from(locations)
+        .where(eq(locations.code, destinationCode));
+      
+      if (!destination) {
+        console.log(`Destination location with code ${destinationCode} not found`);
+        return [];
+      }
+      
+      console.log(`Found origin: ${origin.name} (${origin.code}), destination: ${destination.name} (${destination.code})`);
+      
+      // Convert date to start/end of day for search range
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+      
+      console.log(`Searching for flights between ${startDate.toISOString()} and ${endDate.toISOString()}`);
+      
+      // Find flights matching criteria
+      const matchingFlights = await db
+        .select()
+        .from(flights)
+        .where(
+          and(
+            eq(flights.originId, origin.id),
+            eq(flights.destinationId, destination.id),
+            gte(flights.departureTime, startDate),
+            lte(flights.departureTime, endDate)
+          )
+        );
+      
+      console.log(`Found ${matchingFlights.length} matching flights`);
+      
+      if (matchingFlights.length === 0) {
+        return [];
+      }
+      
+      // Enhance each flight with location data
+      try {
+        const enhancedFlights = await Promise.all(
+          matchingFlights.map(flight => this.enhanceFlightWithLocations(flight))
+        );
+        
+        console.log(`Successfully enhanced ${enhancedFlights.length} flights with location data`);
+        return enhancedFlights;
+      } catch (enhanceError) {
+        console.error("Error enhancing flight locations:", enhanceError);
+        throw enhanceError;
+      }
+    } catch (error) {
+      console.error("Error in searchFlights:", error);
+      throw error;
     }
-    
-    // Convert date to start/end of day
-    const startDate = new Date(date);
-    startDate.setHours(0, 0, 0, 0);
-    
-    const endDate = new Date(date);
-    endDate.setHours(23, 59, 59, 999);
-    
-    // Find flights matching criteria
-    const matchingFlights = await db
-      .select()
-      .from(flights)
-      .where(
-        and(
-          eq(flights.originId, origin.id),
-          eq(flights.destinationId, destination.id),
-          gte(flights.departureTime, startDate),
-          lte(flights.departureTime, endDate)
-        )
-      );
-    
-    // Enhance with location data
-    return await Promise.all(matchingFlights.map(flight => this.enhanceFlightWithLocations(flight)));
   }
 
   // Booking methods
@@ -338,24 +388,44 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async enhanceBookingWithDetails(booking: Booking): Promise<BookingWithDetails> {
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, booking.userId));
-    
-    const flight = await this.getFlight(booking.flightId);
-    
-    if (!user || !flight) {
-      throw new Error(`Could not find user or flight for booking ${booking.id}`);
+    try {
+      console.log(`Enhancing booking details for booking ID: ${booking.id}`);
+      
+      // Get the user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, booking.userId));
+      
+      if (!user) {
+        console.error(`Could not find user with ID ${booking.userId} for booking ${booking.id}`);
+        throw new Error(`User not found for booking ${booking.id}`);
+      }
+      
+      // Get the flight
+      const flight = await this.getFlight(booking.flightId);
+      if (!flight) {
+        console.error(`Could not find flight with ID ${booking.flightId} for booking ${booking.id}`);
+        throw new Error(`Flight not found for booking ${booking.id}`);
+      }
+      
+      // Enhance flight with location details
+      try {
+        const flightWithLocations = await this.enhanceFlightWithLocations(flight);
+        
+        return {
+          ...booking,
+          user,
+          flight: flightWithLocations
+        };
+      } catch (flightErr) {
+        console.error(`Error enhancing flight for booking ${booking.id}:`, flightErr);
+        throw new Error(`Error enhancing flight data for booking ${booking.id}`);
+      }
+    } catch (error) {
+      console.error(`Failed to enhance booking ${booking.id} with details:`, error);
+      throw error;
     }
-    
-    const flightWithLocations = await this.enhanceFlightWithLocations(flight);
-    
-    return {
-      ...booking,
-      user,
-      flight: flightWithLocations
-    };
   }
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
