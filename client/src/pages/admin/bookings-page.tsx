@@ -133,6 +133,7 @@ export default function AdminBookingsPage() {
     // Origin filter
     if (
       filterOptions.originCode &&
+      filterOptions.originCode !== "all_origins" &&
       booking.flight.origin.code !== filterOptions.originCode
     ) {
       return false;
@@ -141,6 +142,7 @@ export default function AdminBookingsPage() {
     // Destination filter
     if (
       filterOptions.destinationCode &&
+      filterOptions.destinationCode !== "all_destinations" &&
       booking.flight.destination.code !== filterOptions.destinationCode
     ) {
       return false;
@@ -204,8 +206,8 @@ export default function AdminBookingsPage() {
       dateRange: "all",
       startDate: null,
       endDate: null,
-      originCode: "",
-      destinationCode: "",
+      originCode: "all_origins",
+      destinationCode: "all_destinations",
     });
     setSearchText("");
     setCurrentPage(1);
@@ -1034,7 +1036,7 @@ export default function AdminBookingsPage() {
                   <SelectValue placeholder="Filter by origin" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Origins</SelectItem>
+                  <SelectItem value="all_origins">All Origins</SelectItem>
                   {locations.map((location) => (
                     <SelectItem key={location.id} value={location.code}>
                       {location.city} ({location.code})
@@ -1056,7 +1058,7 @@ export default function AdminBookingsPage() {
                   <SelectValue placeholder="Filter by destination" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Destinations</SelectItem>
+                  <SelectItem value="all_destinations">All Destinations</SelectItem>
                   {locations.map((location) => (
                     <SelectItem key={location.id} value={location.code}>
                       {location.city} ({location.code})
