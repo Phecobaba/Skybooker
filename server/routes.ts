@@ -412,9 +412,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
+      console.log("Fetching bookings for user ID:", req.user.id);
       const bookings = await storage.getBookingsByUserId(req.user.id);
-      res.json(bookings);
+      console.log("Retrieved bookings:", bookings);
+      res.json(bookings || []);
     } catch (error) {
+      console.error("Error fetching user bookings:", error);
       res.status(500).json({ message: "Failed to fetch bookings" });
     }
   });
