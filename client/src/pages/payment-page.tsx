@@ -204,8 +204,14 @@ export default function PaymentPage() {
     return false;
   };
 
+  // Enhanced handleFileSelect to preserve the file when provided
   const handleFileSelect = (file: File) => {
     setPaymentFile(file);
+    
+    // Reset upload success state if a new file is selected
+    if (paymentSuccess) {
+      setPaymentSuccess(false);
+    }
   };
 
   // Handle going back to booking details
@@ -341,6 +347,7 @@ export default function PaymentPage() {
                               <FileUpload
                                 onFileSelect={handleFileSelect}
                                 accept="image/*"
+                                fileUrl={booking?.paymentProof ? `${booking.paymentProof}` : undefined}
                               />
 
                               <div className="mt-6">

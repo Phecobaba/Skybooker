@@ -1,4 +1,4 @@
-import { FC, useRef, useState, ChangeEvent } from "react";
+import { FC, useRef, useState, useEffect, ChangeEvent } from "react";
 import { Upload, X, FileType } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,13 @@ const FileUpload: FC<FileUploadProps> = ({
 
   // Hold a ref to keep track of the selected file
   const selectedFileRef = useRef<File | null>(null);
+
+  // Set up initial preview URL from fileUrl prop
+  useEffect(() => {
+    if (fileUrl && !previewUrl) {
+      setPreviewUrl(fileUrl);
+    }
+  }, [fileUrl]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,7 +106,8 @@ const FileUpload: FC<FileUploadProps> = ({
         </div>
       ) : (
         <div className="mt-4 bg-gray-50 p-3 rounded flex items-center">
-          {previewUrl.startsWith('data:image') ? (
+          {/* For data URLs or server image paths, show the image preview */}
+          {(previewUrl.startsWith('data:image') || previewUrl.startsWith('/uploads/')) ? (
             <img 
               src={previewUrl} 
               alt="Preview" 
