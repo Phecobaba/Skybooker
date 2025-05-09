@@ -156,16 +156,17 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
         .text('Service Fee:', { continued: true, indent: 10 })
         .text(`  $${serviceFee.toFixed(2)}`, { align: 'right' });
       
-      // Draw a line before total
+      // Add a more visible line before total with proper spacing
       doc
-        .strokeColor('#cbd5e1')
+        .moveDown(0.5)
+        .strokeColor('#94a3b8') // Darker line color for better visibility
         .lineWidth(1)
-        .moveTo(doc.page.width - 150, doc.y + 10)
-        .lineTo(doc.page.width - 50, doc.y + 10)
+        .moveTo(doc.page.width - 200, doc.y)
+        .lineTo(doc.page.width - 50, doc.y)
         .stroke();
       
       doc
-        .moveDown(0.5)
+        .moveDown(1)  // Increase spacing to ensure separation from the line
         .fontSize(12)
         .fillColor('#3b82f6') // Theme color for total amount
         .text('Total Amount:', { continued: true, indent: 10, bold: true })

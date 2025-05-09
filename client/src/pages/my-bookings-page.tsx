@@ -271,10 +271,8 @@ export default function MyBookingsPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex justify-end items-center space-x-2">
-                                <Link href={`/payment/${booking.id}`}>
-                                  <a className="text-primary hover:text-primary/80">
-                                    {booking.status.includes("Pending") ? "Complete Payment" : "View"}
-                                  </a>
+                                <Link href={`/payment/${booking.id}`} className="text-primary hover:text-primary/80">
+                                  {booking.status.includes("Pending") ? "Complete Payment" : "View"}
                                 </Link>
                                 
                                 {/* Receipt download button */}
@@ -297,9 +295,15 @@ export default function MyBookingsPage() {
                                 )}
                                 
                                 {booking.status.includes("Pending") && (
-                                  <a href="#" className="text-red-600 hover:text-red-900">
+                                  <Button 
+                                    variant="link" 
+                                    className="text-red-600 hover:text-red-900 p-0 h-auto"
+                                    onClick={() => {
+                                      // Handle booking cancellation here
+                                    }}
+                                  >
                                     Cancel
-                                  </a>
+                                  </Button>
                                 )}
                               </div>
                             </td>
