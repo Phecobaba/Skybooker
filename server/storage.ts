@@ -57,6 +57,8 @@ export interface IStorage {
   updateBookingStatus(id: number, status: string, declineReason?: string): Promise<Booking | undefined>;
   updateBookingPayment(id: number, payment: { paymentReference?: string, paymentProof?: string, receiptPath?: string }): Promise<Booking | undefined>;
   updateBookingReceipt(id: number, receiptPath: string): Promise<Booking | undefined>;
+  deleteBooking(id: number): Promise<boolean>;
+  deleteManyBookings(ids: number[]): Promise<number>;
 
   // Payment Accounts
   getPaymentAccounts(): Promise<PaymentAccount[]>;
@@ -583,6 +585,27 @@ export class MemStorage implements IStorage {
     
     this.bookings.set(id, updatedBooking);
     return updatedBooking;
+  }
+  
+  async deleteBooking(id: number): Promise<boolean> {
+    const exists = this.bookings.has(id);
+    if (exists) {
+      this.bookings.delete(id);
+    }
+    return exists;
+  }
+  
+  async deleteManyBookings(ids: number[]): Promise<number> {
+    let deletedCount = 0;
+    
+    for (const id of ids) {
+      if (this.bookings.has(id)) {
+        this.bookings.delete(id);
+        deletedCount++;
+      }
+    }
+    
+    return deletedCount;
   }
 
   // Payment Account methods

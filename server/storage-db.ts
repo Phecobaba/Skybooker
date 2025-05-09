@@ -543,6 +543,36 @@ export class DatabaseStorage implements IStorage {
     
     return booking || undefined;
   }
+  
+  async deleteBooking(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(bookings)
+        .where(eq(bookings.id, id));
+      
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deleting booking:", error);
+      throw error;
+    }
+  }
+  
+  async deleteManyBookings(ids: number[]): Promise<number> {
+    try {
+      if (ids.length === 0) {
+        return 0;
+      }
+      
+      const result = await db
+        .delete(bookings)
+        .where(inArray(bookings.id, ids));
+      
+      return result.rowCount;
+    } catch (error) {
+      console.error("Error deleting multiple bookings:", error);
+      throw error;
+    }
+  }
 
   // Payment Account methods
   async getPaymentAccounts(): Promise<PaymentAccount[]> {
