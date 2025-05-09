@@ -199,6 +199,9 @@ export default function MyBookingsPage() {
                             Date
                           </th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Class
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                           </th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -234,6 +237,17 @@ export default function MyBookingsPage() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                booking.travelClass === 'First Class' 
+                                  ? 'bg-purple-100 text-purple-800' 
+                                  : booking.travelClass === 'Business' 
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-green-100 text-green-800'
+                              }`}>
+                                {booking.travelClass || 'Economy'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(booking.status)}`}>
                                 {booking.status}
                               </span>
@@ -244,7 +258,15 @@ export default function MyBookingsPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              ${booking.flight.price.toFixed(2)}
+                              ${booking.ticketPrice ? 
+                                booking.ticketPrice.toFixed(2) : 
+                                (booking.travelClass === 'Business' 
+                                  ? booking.flight.businessPrice.toFixed(2)
+                                  : booking.travelClass === 'First Class'
+                                    ? booking.flight.firstClassPrice.toFixed(2)
+                                    : booking.flight.economyPrice.toFixed(2)
+                                )
+                              }
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex justify-end items-center space-x-2">
