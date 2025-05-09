@@ -241,14 +241,14 @@ export default function AdminFlightsPage() {
         departureTime: format(new Date(selectedFlight.departureTime), "HH:mm"),
         arrivalDate: new Date(selectedFlight.arrivalTime),
         arrivalTime: format(new Date(selectedFlight.arrivalTime), "HH:mm"),
-        price: "0", // Base price - only used for calculations
-        economyPrice: selectedFlight.economyPrice?.toString() || "0",
-        businessPrice: selectedFlight.businessPrice?.toString() || "0",
-        firstClassPrice: selectedFlight.firstClassPrice?.toString() || "0",
-        capacity: "0", // Total capacity - calculated from the sum
-        economyCapacity: selectedFlight.economyCapacity?.toString() || "0",
-        businessCapacity: selectedFlight.businessCapacity?.toString() || "0",
-        firstClassCapacity: selectedFlight.firstClassCapacity?.toString() || "0",
+        price: selectedFlight.economyPrice?.toString() || "500", // Base price now uses economy price
+        economyPrice: selectedFlight.economyPrice?.toString() || "500",
+        businessPrice: selectedFlight.businessPrice?.toString() || "1000",
+        firstClassPrice: selectedFlight.firstClassPrice?.toString() || "1500",
+        capacity: "200", // Total capacity
+        economyCapacity: selectedFlight.economyCapacity?.toString() || "150",
+        businessCapacity: selectedFlight.businessCapacity?.toString() || "30",
+        firstClassCapacity: selectedFlight.firstClassCapacity?.toString() || "20",
       });
     }
   }, [selectedFlight, isEditDialogOpen, editForm]);
@@ -332,71 +332,67 @@ export default function AdminFlightsPage() {
 
   // Form submission handlers
   const onAddSubmit = (values: FlightFormValues) => {
-    // Combine date and time
-    const departureDateTime = new Date(values.departureDate);
-    const [departureHours, departureMinutes] = values.departureTime.split(':').map(Number);
-    departureDateTime.setHours(departureHours, departureMinutes);
-    
-    const arrivalDateTime = new Date(values.arrivalDate);
-    const [arrivalHours, arrivalMinutes] = values.arrivalTime.split(':').map(Number);
-    arrivalDateTime.setHours(arrivalHours, arrivalMinutes);
-    
-    // Parse price and capacity values
-    const economyPrice = parseFloat(values.economyPrice || values.price);
-    const businessPrice = parseFloat(values.businessPrice || (economyPrice * 2).toString());
-    const firstClassPrice = parseFloat(values.firstClassPrice || (economyPrice * 3).toString());
-    
-    const economyCapacity = parseInt(values.economyCapacity || "120");
-    const businessCapacity = parseInt(values.businessCapacity || "20");
-    const firstClassCapacity = parseInt(values.firstClassCapacity || "10");
-    
-    // Calculate total capacity
-    const totalCapacity = economyCapacity + businessCapacity + firstClassCapacity;
-    
-    createFlightMutation.mutate({
-      originId: values.originId,
-      destinationId: values.destinationId,
-      departureTime: departureDateTime.toISOString(),
-      arrivalTime: arrivalDateTime.toISOString(),
-      economyPrice: economyPrice,
-      businessPrice: businessPrice, 
-      firstClassPrice: firstClassPrice,
-      economyCapacity: economyCapacity,
-      businessCapacity: businessCapacity,
-      firstClassCapacity: firstClassCapacity,
-      // Keep these for backward compatibility
-      price: economyPrice,
-      capacity: totalCapacity,
-    });
-  };
-
-  const onEditSubmit = (values: FlightFormValues) => {
-    if (!selectedFlightId) return;
-    
-    // Combine date and time
-    const departureDateTime = new Date(values.departureDate);
-    const [departureHours, departureMinutes] = values.departureTime.split(':').map(Number);
-    departureDateTime.setHours(departureHours, departureMinutes);
-    
-    const arrivalDateTime = new Date(values.arrivalDate);
-    const [arrivalHours, arrivalMinutes] = values.arrivalTime.split(':').map(Number);
-    arrivalDateTime.setHours(arrivalHours, arrivalMinutes);
-    
-    // Parse price and capacity values
-    const economyPrice = parseFloat(values.economyPrice || values.price);
-    const businessPrice = parseFloat(values.businessPrice || (economyPrice * 2).toString());
-    const firstClassPrice = parseFloat(values.firstClassPrice || (economyPrice * 3).toString());
-    
-    const economyCapacity = parseInt(values.economyCapacity || "120");
-    const businessCapacity = parseInt(values.businessCapacity || "20");
-    const firstClassCapacity = parseInt(values.firstClassCapacity || "10");
-    
-    // Calculate total capacity
-    const totalCapacity = economyCapacity + businessCapacity + firstClassCapacity;
-    
-    updateFlightMutation.mutate({
-      id: selectedFlightId,
-      flightData: {
+    try {
+      console.log("Add Flight form submission values:", values);
+      
+      // Validations for origin and destination
+      if (values.originId === 0 || values.destinationId === 0) {
+        toast({
+          title: "Validation Error",
+          description: "Please select both origin and destination airports",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (values.originId === values.destinationId) {
+        toast({
+          title: "Validation Error",
+          description: "Origin and destination airports cannot be the same",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Combine date and time
+      const departureDateTime = new Date(values.departureDate);
+      const [departureHours, departureMinutes] = values.departureTime.split(':').map(Number);
+      departureDateTime.setHours(departureHours, departureMinutes);
+      
+      const arrivalDateTime = new Date(values.arrivalDate);
+      const [arrivalHours, arrivalMinutes] = values.arrivalTime.split(':').map(Number);
+      arrivalDateTime.setHours(arrivalHours, arrivalMinutes);
+      
+      // Validate dates
+      if (arrivalDateTime <= departureDateTime) {
+        toast({
+          title: "Validation Error",
+          description: "Arrival time must be after departure time",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Parse price and capacity values
+      const economyPrice = parseFloat(values.economyPrice || values.price);
+      const businessPrice = parseFloat(values.businessPrice || (economyPrice * 2).toString());
+      const firstClassPrice = parseFloat(values.firstClassPrice || (economyPrice * 3).toString());
+      
+      const economyCapacity = parseInt(values.economyCapacity || "120");
+      const businessCapacity = parseInt(values.businessCapacity || "20");
+      const firstClassCapacity = parseInt(values.firstClassCapacity || "10");
+      
+      // Calculate total capacity
+      const totalCapacity = economyCapacity + businessCapacity + firstClassCapacity;
+      
+      console.log("Submitting flight data to API:", {
+        originId: values.originId,
+        destinationId: values.destinationId,
+        departureTime: departureDateTime.toISOString(),
+        arrivalTime: arrivalDateTime.toISOString(),
+      });
+      
+      createFlightMutation.mutate({
         originId: values.originId,
         destinationId: values.destinationId,
         departureTime: departureDateTime.toISOString(),
@@ -410,8 +406,114 @@ export default function AdminFlightsPage() {
         // Keep these for backward compatibility
         price: economyPrice,
         capacity: totalCapacity,
-      },
-    });
+      });
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      toast({
+        title: "Error submitting form",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const onEditSubmit = (values: FlightFormValues) => {
+    try {
+      if (!selectedFlightId) {
+        toast({
+          title: "Error",
+          description: "No flight selected for editing",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log("Edit Flight form submission values:", values);
+      
+      // Validations for origin and destination
+      if (values.originId === 0 || values.destinationId === 0) {
+        toast({
+          title: "Validation Error",
+          description: "Please select both origin and destination airports",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (values.originId === values.destinationId) {
+        toast({
+          title: "Validation Error",
+          description: "Origin and destination airports cannot be the same",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Combine date and time
+      const departureDateTime = new Date(values.departureDate);
+      const [departureHours, departureMinutes] = values.departureTime.split(':').map(Number);
+      departureDateTime.setHours(departureHours, departureMinutes);
+      
+      const arrivalDateTime = new Date(values.arrivalDate);
+      const [arrivalHours, arrivalMinutes] = values.arrivalTime.split(':').map(Number);
+      arrivalDateTime.setHours(arrivalHours, arrivalMinutes);
+      
+      // Validate dates
+      if (arrivalDateTime <= departureDateTime) {
+        toast({
+          title: "Validation Error",
+          description: "Arrival time must be after departure time",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Parse price and capacity values
+      const economyPrice = parseFloat(values.economyPrice || values.price);
+      const businessPrice = parseFloat(values.businessPrice || (economyPrice * 2).toString());
+      const firstClassPrice = parseFloat(values.firstClassPrice || (economyPrice * 3).toString());
+      
+      const economyCapacity = parseInt(values.economyCapacity || "120");
+      const businessCapacity = parseInt(values.businessCapacity || "20");
+      const firstClassCapacity = parseInt(values.firstClassCapacity || "10");
+      
+      // Calculate total capacity
+      const totalCapacity = economyCapacity + businessCapacity + firstClassCapacity;
+      
+      console.log("Submitting updated flight data to API:", {
+        id: selectedFlightId,
+        originId: values.originId,
+        destinationId: values.destinationId,
+        departureTime: departureDateTime.toISOString(),
+        arrivalTime: arrivalDateTime.toISOString(),
+      });
+      
+      updateFlightMutation.mutate({
+        id: selectedFlightId,
+        flightData: {
+          originId: values.originId,
+          destinationId: values.destinationId,
+          departureTime: departureDateTime.toISOString(),
+          arrivalTime: arrivalDateTime.toISOString(),
+          economyPrice: economyPrice,
+          businessPrice: businessPrice, 
+          firstClassPrice: firstClassPrice,
+          economyCapacity: economyCapacity,
+          businessCapacity: businessCapacity,
+          firstClassCapacity: firstClassCapacity,
+          // Keep these for backward compatibility
+          price: economyPrice,
+          capacity: totalCapacity,
+        },
+      });
+    } catch (error) {
+      console.error("Error in edit form submission:", error);
+      toast({
+        title: "Error updating flight",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteConfirm = () => {
