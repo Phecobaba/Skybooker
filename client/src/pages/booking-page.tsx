@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -76,8 +76,33 @@ export default function BookingPage() {
       passengerLastName: user?.lastName || "",
       passengerEmail: user?.email || "",
       passengerPhone: "",
+      travelClass: TravelClass.ECONOMY,
+      ticketPrice: 0, // This will be set based on selected travel class
     },
   });
+  
+  // Calculate the price based on selected travel class
+  const getClassPrice = (travelClass: string): number => {
+    if (!flight) return 0;
+    
+    switch (travelClass) {
+      case TravelClass.BUSINESS:
+        return flight.businessPrice;
+      case TravelClass.FIRST_CLASS:
+        return flight.firstClassPrice;
+      case TravelClass.ECONOMY:
+      default:
+        return flight.economyPrice;
+    }
+  };
+  
+  // Update form values when travel class changes
+  const handleClassChange = (value: string) => {
+    setSelectedClass(value);
+    const price = getClassPrice(value);
+    form.setValue('travelClass', value as any);
+    form.setValue('ticketPrice', price);
+  };
 
   // Create booking mutation
   const bookingMutation = useMutation({
@@ -102,13 +127,25 @@ export default function BookingPage() {
     },
   });
 
+  // Initialize ticket price based on selected class when flight data is received
+  useEffect(() => {
+    if (flight) {
+      const initialPrice = getClassPrice(TravelClass.ECONOMY);
+      form.setValue('ticketPrice', initialPrice);
+    }
+  }, [flight]);
+
   const onSubmit = (values: PassengerFormValues) => {
     if (!flight || !user) return;
 
+    // Make sure we have the current price based on the selected travel class
+    const currentPrice = getClassPrice(values.travelClass);
+    
     const bookingData: InsertBooking = {
       userId: user.id,
       flightId: flight.id,
       ...values,
+      ticketPrice: currentPrice, // Ensure price is set correctly
       status: "Pending",
     };
 
@@ -172,7 +209,7 @@ export default function BookingPage() {
                     </div>
                   </div>
                   <div className="mt-3 md:mt-0">
-                    <span className="text-lg font-bold text-primary">${flight.price.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-primary">${getClassPrice(selectedClass).toFixed(2)}</span>
                     <span className="text-gray-500 text-sm ml-1">per person</span>
                   </div>
                 </div>
@@ -207,7 +244,7 @@ export default function BookingPage() {
                         "h'h' mm'm'"
                       )}
                     </div>
-                    <div>Economy Class</div>
+                    <div>{selectedClass}</div>
                   </div>
                 </div>
               </div>
@@ -273,6 +310,48 @@ export default function BookingPage() {
                           </FormItem>
                         )}
                       />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="travelClass"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Travel Class</FormLabel>
+                            <Select
+                              defaultValue={TravelClass.ECONOMY}
+                              onValueChange={(value) => {
+                                handleClassChange(value);
+                                field.onChange(value);
+                              }}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select Travel Class" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value={TravelClass.ECONOMY}>
+                                  {TravelClass.ECONOMY} (${flight.economyPrice.toFixed(2)})
+                                </SelectItem>
+                                <SelectItem value={TravelClass.BUSINESS}>
+                                  {TravelClass.BUSINESS} (${flight.businessPrice.toFixed(2)})
+                                </SelectItem>
+                                <SelectItem value={TravelClass.FIRST_CLASS}>
+                                  {TravelClass.FIRST_CLASS} (${flight.firstClassPrice.toFixed(2)})
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex flex-col justify-end">
+                        <div className="mt-8 p-4 bg-blue-50 rounded-md border border-blue-200">
+                          <p className="text-blue-800 font-semibold">Selected Price: ${getClassPrice(selectedClass).toFixed(2)}</p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex justify-end mt-4">
