@@ -92,8 +92,26 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
         .fillColor('#000000') // Reset to black
         .moveDown(0.5);
       
+      // Determine if it's a one-way or round-trip based on flight dates and route
+      // By default, we'll use one-way flight, but if there are indications of a round trip
+      // (like very extended days or same airports), we'll label it as roundtrip
+      let tripType = 'One-way Flight';
+      
+      // Check if flight duration is over certain days - could be an indicator for round trip
+      const departureDate = new Date(flight.departureTime);
+      const arrivalDate = new Date(flight.arrivalTime);
+      const daysDifference = Math.ceil((arrivalDate.getTime() - departureDate.getTime()) / (1000 * 3600 * 24));
+      
+      // If flight duration is over 14 days, it might be considered as a roundtrip
+      // or if flight origin and destination airport codes are the same
+      if (daysDifference > 14 || flight.origin.code === flight.destination.code) {
+        tripType = 'Round-trip Flight';
+      }
+      
       doc
         .fontSize(10)
+        .text('Trip Type:', { continued: true, indent: 10 })
+        .text(`  ${tripType}`, { align: 'right' })
         .text('Flight:', { continued: true, indent: 10 })
         .text(`  ${flight.origin.code} to ${flight.destination.code}`, { align: 'right' })
         .text('From:', { continued: true, indent: 10 })

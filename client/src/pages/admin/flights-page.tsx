@@ -436,7 +436,7 @@ export default function AdminFlightsPage() {
         <div className="flex flex-col w-0 flex-1 overflow-hidden">
           <main className="flex-1 relative overflow-y-auto focus:outline-none">
             <div className="py-6">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+              <div className="max-w-full mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
                 <AdminHeader 
                   title="Flight Management"
                   description="Add, edit, or remove flights from the system"
@@ -503,109 +503,111 @@ export default function AdminFlightsPage() {
                 ) : (
                   <div className="bg-white shadow overflow-hidden rounded-lg">
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Flight ID
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Origin
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Destination
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Departure
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Arrival
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Price
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Capacity
-                            </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {currentFlights.map((flight) => (
-                            <tr key={flight.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">
-                                  FL-{flight.id.toString().padStart(3, '0')}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
-                                  {flight.origin.code}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {flight.origin.city}, {flight.origin.country}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
-                                  {flight.destination.code}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {flight.destination.city}, {flight.destination.country}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
-                                  {format(new Date(flight.departureTime), "MMM d, yyyy")}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {format(new Date(flight.departureTime), "h:mm a")}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-900">
-                                  {format(new Date(flight.arrivalTime), "MMM d, yyyy")}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {format(new Date(flight.arrivalTime), "h:mm a")}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ${flight.economyPrice.toFixed(2)} - ${flight.firstClassPrice.toFixed(2)}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {flight.economyCapacity + flight.businessCapacity + flight.firstClassCapacity} seats
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-primary hover:text-primary/80"
-                                  onClick={() => {
-                                    setSelectedFlightId(flight.id);
-                                    setIsEditDialogOpen(true);
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4 mr-1" /> Edit
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-red-600 hover:text-red-900 ml-2"
-                                  onClick={() => {
-                                    setSelectedFlightId(flight.id);
-                                    setIsDeleteDialogOpen(true);
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-1" /> Delete
-                                </Button>
-                              </td>
+                      <div className="inline-block min-w-full align-middle">
+                        <table className="min-w-full divide-y divide-gray-200 table-fixed sm:table-auto">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Flight ID
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Origin
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Destination
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Departure
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Arrival
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Price
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Capacity
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {currentFlights.map((flight) => (
+                              <tr key={flight.id}>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">
+                                    FL-{flight.id.toString().padStart(3, '0')}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">
+                                    {flight.origin.code}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {flight.origin.city}, {flight.origin.country}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">
+                                    {flight.destination.code}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {flight.destination.city}, {flight.destination.country}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">
+                                    {format(new Date(flight.departureTime), "MMM d, yyyy")}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {format(new Date(flight.departureTime), "h:mm a")}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">
+                                    {format(new Date(flight.arrivalTime), "MMM d, yyyy")}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {format(new Date(flight.arrivalTime), "h:mm a")}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  ${flight.economyPrice.toFixed(2)} - ${flight.firstClassPrice.toFixed(2)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {flight.economyCapacity + flight.businessCapacity + flight.firstClassCapacity} seats
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-primary hover:text-primary/80"
+                                    onClick={() => {
+                                      setSelectedFlightId(flight.id);
+                                      setIsEditDialogOpen(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4 mr-1" /> Edit
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-600 hover:text-red-900 ml-2"
+                                    onClick={() => {
+                                      setSelectedFlightId(flight.id);
+                                      setIsDeleteDialogOpen(true);
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                     
                     {/* Pagination */}
@@ -702,7 +704,7 @@ export default function AdminFlightsPage() {
           
           <Form {...addForm}>
             <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={addForm.control}
                   name="originId"
@@ -762,7 +764,7 @@ export default function AdminFlightsPage() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={addForm.control}
                   name="departureDate"
@@ -820,7 +822,7 @@ export default function AdminFlightsPage() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={addForm.control}
                   name="arrivalDate"
@@ -878,9 +880,9 @@ export default function AdminFlightsPage() {
                 />
               </div>
               
-              <div className="border p-4 rounded-lg mb-2">
-                <h3 className="font-medium mb-3 text-primary">Economy Class</h3>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Pricing</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={addForm.control}
                     name="economyPrice"
@@ -888,7 +890,7 @@ export default function AdminFlightsPage() {
                       <FormItem>
                         <FormLabel>Economy Price ($)</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" step="0.01" {...field} />
+                          <Input type="number" min="0" step="0.01" placeholder="e.g. 199.99" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -897,12 +899,26 @@ export default function AdminFlightsPage() {
                   
                   <FormField
                     control={addForm.control}
-                    name="economyCapacity"
+                    name="businessPrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Economy Capacity (seats)</FormLabel>
+                        <FormLabel>Business Price ($)</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" {...field} />
+                          <Input type="number" min="0" step="0.01" placeholder="e.g. 349.99" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="firstClassPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Class Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" placeholder="e.g. 599.99" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -911,17 +927,17 @@ export default function AdminFlightsPage() {
                 </div>
               </div>
               
-              <div className="border p-4 rounded-lg mb-2">
-                <h3 className="font-medium mb-3 text-primary">Business Class</h3>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Capacity</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={addForm.control}
-                    name="businessPrice"
+                    name="economyCapacity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Business Price ($)</FormLabel>
+                        <FormLabel>Economy Seats</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" step="0.01" {...field} />
+                          <Input type="number" min="0" step="1" placeholder="e.g. 100" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -933,28 +949,9 @@ export default function AdminFlightsPage() {
                     name="businessCapacity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Business Capacity (seats)</FormLabel>
+                        <FormLabel>Business Seats</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-              
-              <div className="border p-4 rounded-lg mb-2">
-                <h3 className="font-medium mb-3 text-primary">First Class</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={addForm.control}
-                    name="firstClassPrice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Class Price ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" step="0.01" {...field} />
+                          <Input type="number" min="0" step="1" placeholder="e.g. 20" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -966,9 +963,9 @@ export default function AdminFlightsPage() {
                     name="firstClassCapacity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Class Capacity (seats)</FormLabel>
+                        <FormLabel>First Class Seats</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" {...field} />
+                          <Input type="number" min="0" step="1" placeholder="e.g. 10" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -977,256 +974,137 @@ export default function AdminFlightsPage() {
                 </div>
               </div>
               
-              {/* Keep legacy price/capacity fields hidden for backward compatibility */}
-              <div className="hidden">
-                <FormField
-                  control={addForm.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input type="hidden" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={addForm.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input type="hidden" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAddDialogOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={createFlightMutation.isPending}
                 >
-                  {createFlightMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    "Create Flight"
+                  {createFlightMutation.isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
+                  Add Flight
                 </Button>
               </DialogFooter>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
-
+      
       {/* Edit Flight Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Edit Flight</DialogTitle>
             <DialogDescription>
-              Update the details for flight FL-{selectedFlightId?.toString().padStart(3, '0')}.
+              Update the details for this flight.
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="originId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Origin</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(parseInt(value))}
-                        value={field.value.toString()}
-                        disabled={locationsLoading}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select origin" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {locations.map((location) => (
-                            <SelectItem key={location.id} value={location.id.toString()}>
-                              {location.city} ({location.code})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="destinationId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Destination</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(parseInt(value))}
-                        value={field.value.toString()}
-                        disabled={locationsLoading}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select destination" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {locations.map((location) => (
-                            <SelectItem key={location.id} value={location.id.toString()}>
-                              {location.city} ({location.code})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="departureDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Departure Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+          {selectedFlight && (
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="originId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Origin</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          value={field.value.toString()}
+                          disabled={locationsLoading}
+                        >
                           <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select origin" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="departureTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Departure Time</FormLabel>
-                      <div className="flex items-center">
-                        <Clock className="mr-2 h-4 w-4 opacity-50" />
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="arrivalDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Arrival Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                          <SelectContent>
+                            {locations.map((location) => (
+                              <SelectItem key={location.id} value={location.id.toString()}>
+                                {location.city} ({location.code})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="destinationId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Destination</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          value={field.value.toString()}
+                          disabled={locationsLoading}
+                        >
                           <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select destination" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          <SelectContent>
+                            {locations.map((location) => (
+                              <SelectItem key={location.id} value={location.id.toString()}>
+                                {location.city} ({location.code})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
-                <FormField
-                  control={editForm.control}
-                  name="arrivalTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Arrival Time</FormLabel>
-                      <div className="flex items-center">
-                        <Clock className="mr-2 h-4 w-4 opacity-50" />
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="border p-4 rounded-lg mb-2">
-                <h3 className="font-medium mb-3 text-primary">Economy Class</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={editForm.control}
-                    name="economyPrice"
+                    name="departureDate"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Economy Price ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" step="0.01" {...field} />
-                        </FormControl>
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Departure Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1234,155 +1112,209 @@ export default function AdminFlightsPage() {
                   
                   <FormField
                     control={editForm.control}
-                    name="economyCapacity"
+                    name="departureTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Economy Capacity (seats)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" {...field} />
-                        </FormControl>
+                        <FormLabel>Departure Time</FormLabel>
+                        <div className="flex items-center">
+                          <Clock className="mr-2 h-4 w-4 opacity-50" />
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-              </div>
-              
-              <div className="border p-4 rounded-lg mb-2">
-                <h3 className="font-medium mb-3 text-primary">Business Class</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="businessPrice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Price ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" step="0.01" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="businessCapacity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Business Capacity (seats)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-              
-              <div className="border p-4 rounded-lg mb-2">
-                <h3 className="font-medium mb-3 text-primary">First Class</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="firstClassPrice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Class Price ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" step="0.01" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="firstClassCapacity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Class Capacity (seats)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-              
-              {/* Keep legacy price/capacity fields hidden for backward compatibility */}
-              <div className="hidden">
-                <FormField
-                  control={editForm.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input type="hidden" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
                 
-                <FormField
-                  control={editForm.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input type="hidden" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => {
-                  setIsEditDialogOpen(false);
-                  setSelectedFlightId(null);
-                }}>
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={updateFlightMutation.isPending}
-                >
-                  {updateFlightMutation.isPending ? (
-                    <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="arrivalDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Arrival Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="arrivalTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Arrival Time</FormLabel>
+                        <div className="flex items-center">
+                          <Clock className="mr-2 h-4 w-4 opacity-50" />
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Pricing</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="economyPrice"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Economy Price ($)</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" step="0.01" placeholder="e.g. 199.99" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={editForm.control}
+                      name="businessPrice"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Business Price ($)</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" step="0.01" placeholder="e.g. 349.99" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={editForm.control}
+                      name="firstClassPrice"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Class Price ($)</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" step="0.01" placeholder="e.g. 599.99" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Capacity</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="economyCapacity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Economy Seats</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" step="1" placeholder="e.g. 100" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={editForm.control}
+                      name="businessCapacity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Business Seats</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" step="1" placeholder="e.g. 20" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={editForm.control}
+                      name="firstClassCapacity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Class Seats</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" step="1" placeholder="e.g. 10" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsEditDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={updateFlightMutation.isPending}
+                  >
+                    {updateFlightMutation.isPending && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Flight"
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+                    )}
+                    Update Flight
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          )}
         </DialogContent>
       </Dialog>
-
-      {/* Delete Flight Confirmation */}
+      
+      {/* Delete Flight Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this flight?</AlertDialogTitle>
+            <AlertDialogTitle>Delete Flight</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the flight and any associated data.
+              Are you sure you want to delete this flight? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setIsDeleteDialogOpen(false);
-              setSelectedFlightId(null);
-            }}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteConfirm}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
