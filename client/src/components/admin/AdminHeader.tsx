@@ -17,9 +17,22 @@ export default function AdminHeader({
 }: AdminHeaderProps) {
   const [location] = useLocation();
   
-  // Don't show the back button on dashboard page
-  const isDashboard = location === "/admin";
-  const shouldShowBackButton = showBackButton && !isDashboard;
+  // Only show the back button on deeper admin pages, not on main admin pages
+  // where the sidebar is already visible
+  const isMainAdminPage = [
+    "/admin",
+    "/admin/flights",
+    "/admin/locations",
+    "/admin/bookings",
+    "/admin/payments",
+    "/admin/payment-settings",
+    "/admin/users", 
+    "/admin/site-settings",
+    "/admin/page-contents",
+    "/admin/settings"
+  ].includes(location);
+  
+  const shouldShowBackButton = showBackButton && !isMainAdminPage;
   
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
