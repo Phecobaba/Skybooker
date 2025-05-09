@@ -433,7 +433,18 @@ export default function AdminBookingsPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-900">
-                                  ${booking.flight.price.toFixed(2)}
+                                  ${booking.ticketPrice ? 
+                                    booking.ticketPrice.toFixed(2) : 
+                                    (booking.travelClass === 'Business' 
+                                      ? booking.flight.businessPrice.toFixed(2)
+                                      : booking.travelClass === 'First Class'
+                                        ? booking.flight.firstClassPrice.toFixed(2)
+                                        : booking.flight.economyPrice.toFixed(2)
+                                    )
+                                  }
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  {booking.travelClass || 'Economy'} Class
                                 </div>
                                 <div className="text-xs text-gray-500">
                                   {booking.paymentReference
@@ -778,7 +789,18 @@ export default function AdminBookingsPage() {
                     <div className="text-right">
                       <div className="text-xs text-gray-500">Price</div>
                       <div className="text-sm font-medium">
-                        ${selectedBooking.flight.price.toFixed(2)}
+                        ${selectedBooking.ticketPrice ? 
+                          selectedBooking.ticketPrice.toFixed(2) : 
+                          (selectedBooking.travelClass === 'Business' 
+                            ? selectedBooking.flight.businessPrice.toFixed(2)
+                            : selectedBooking.travelClass === 'First Class'
+                              ? selectedBooking.flight.firstClassPrice.toFixed(2)
+                              : selectedBooking.flight.economyPrice.toFixed(2)
+                          )
+                        }
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {selectedBooking.travelClass || 'Economy'} Class
                       </div>
                     </div>
                   </div>
@@ -873,7 +895,15 @@ export default function AdminBookingsPage() {
                       Flight Capacity
                     </div>
                     <div className="text-sm">
-                      {selectedBooking.flight.capacity} seats
+                      {selectedBooking.travelClass === 'Business' 
+                        ? `${selectedBooking.flight.businessCapacity} Business Class seats`
+                        : selectedBooking.travelClass === 'First Class'
+                          ? `${selectedBooking.flight.firstClassCapacity} First Class seats`
+                          : `${selectedBooking.flight.economyCapacity} Economy Class seats`
+                      }
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Total capacity: {selectedBooking.flight.economyCapacity + selectedBooking.flight.businessCapacity + selectedBooking.flight.firstClassCapacity} seats
                     </div>
                   </div>
                 </div>

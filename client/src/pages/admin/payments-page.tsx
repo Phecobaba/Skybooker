@@ -277,7 +277,18 @@ export default function AdminPaymentsPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm font-medium text-gray-900">
-                                  ${booking.flight.price.toFixed(2)}
+                                  ${booking.ticketPrice ? 
+                                    booking.ticketPrice.toFixed(2) : 
+                                    (booking.travelClass === 'Business' 
+                                      ? booking.flight.businessPrice.toFixed(2)
+                                      : booking.travelClass === 'First Class'
+                                        ? booking.flight.firstClassPrice.toFixed(2)
+                                        : booking.flight.economyPrice.toFixed(2)
+                                    )
+                                  }
+                                  <span className="text-xs text-gray-600 block mt-1">
+                                    {booking.travelClass || 'Economy'} Class
+                                  </span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -452,7 +463,18 @@ export default function AdminPaymentsPage() {
                     </p>
                     <p className="text-sm text-gray-700">
                       <span className="font-medium">Amount:</span>{" "}
-                      ${selectedBooking.flight.price.toFixed(2)}
+                      ${selectedBooking.ticketPrice ? 
+                          selectedBooking.ticketPrice.toFixed(2) : 
+                          (selectedBooking.travelClass === 'Business' 
+                            ? selectedBooking.flight.businessPrice.toFixed(2)
+                            : selectedBooking.travelClass === 'First Class'
+                              ? selectedBooking.flight.firstClassPrice.toFixed(2)
+                              : selectedBooking.flight.economyPrice.toFixed(2)
+                          )
+                        }
+                      <span className="block mt-1 text-xs text-gray-500">
+                        {selectedBooking.travelClass || 'Economy'} Class
+                      </span>
                     </p>
                   </div>
                 </div>
