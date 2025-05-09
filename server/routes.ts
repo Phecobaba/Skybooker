@@ -501,7 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Processing payment for booking ${bookingId} with reference ${paymentReference}`);
       
-      // First, change booking status to "Pending Payment"
+      // Change booking status to "Pending Payment" only - admin must approve to set it to "Paid"
       await storage.updateBookingStatus(bookingId, "Pending Payment");
       
       // Update booking with payment info
@@ -514,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedBooking);
       
       // Use setTimeout to ensure this runs in a separate event loop cycle,
-      // making it truly non-blocking
+      // making it truly non-blocking to send status update email
       setTimeout(() => {
         // Handle additional processing asynchronously after response is sent
         (async () => {
@@ -522,27 +522,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Get full booking details with relations for the background process
             const fullBooking = await storage.getBookingById(bookingId);
             
-            // First change status to "Paid"
+            // Only send status update email - DO NOT change to "Paid"
             if (fullBooking) {
-              await storage.updateBookingStatus(bookingId, "Paid");
-              
-              // Generate receipt if needed
-              if (!fullBooking.receiptPath) {
-                console.log(`Generating receipt for booking ${bookingId} in background`);
-                const receiptPath = await generateReceiptPdf(fullBooking);
-                await storage.updateBookingReceipt(bookingId, receiptPath);
-                
-                // Get updated booking with receipt path
-                const updatedBookingWithReceipt = await storage.getBookingById(bookingId);
-                
-                // Send payment confirmation email in the background
-                if (updatedBookingWithReceipt) {
-                  try {
-                    await sendPaymentConfirmationEmail(updatedBookingWithReceipt);
-                    console.log(`Payment confirmation email sent for booking ID: ${bookingId}`);
-                  } catch (emailError) {
-                    console.error("Failed to send payment confirmation email:", emailError);
-                  }
+              // Only send email if status is "Pending Payment"
+              if (fullBooking.status.toLowerCase() === "pending payment") {
+                try {
+                  await sendBookingStatusUpdateEmail(fullBooking, "Pending");
+                  console.log(`Status update email sent for booking ID: ${bookingId} (Pending -> Pending Payment)`);
+                } catch (emailError) {
+                  console.error("Failed to send status update email:", emailError);
                 }
               }
             }
