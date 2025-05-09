@@ -151,7 +151,11 @@ export default function PaymentPage() {
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
       
-      // We'll handle the redirect in a useEffect for better cleanup
+      // Directly redirect instead of waiting for the effect to trigger
+      // Give a short delay for the success state to be visible first
+      setTimeout(() => {
+        navigate("/my-bookings");
+      }, 2000);
     },
     onError: (error: Error) => {
       toast({

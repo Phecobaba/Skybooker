@@ -25,6 +25,7 @@ import AdminPageContentsPage from "@/pages/admin/page-contents-page";
 import PageContentPage from "@/pages/page-content";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
+import { NotificationsProvider } from "./hooks/use-notifications";
 import SmartSupp from "@/components/SmartSupp";
 
 function Router() {
