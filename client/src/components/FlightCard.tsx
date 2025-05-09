@@ -12,9 +12,11 @@ interface FlightCardProps {
 }
 
 const FlightCard: FC<FlightCardProps> = ({ flight, highlighted = false }) => {
-  const { departureTime, arrivalTime, price, origin, destination } = flight;
+  const { departureTime, arrivalTime, economyPrice, businessPrice, firstClassPrice, origin, destination } = flight;
   const [paymentAccount, setPaymentAccount] = useState<PaymentAccount | null>(null);
-  const [totalPrice, setTotalPrice] = useState<number>(price);
+  // Use economy price as the default price
+  const basePrice = economyPrice;
+  const [totalPrice, setTotalPrice] = useState<number>(basePrice);
 
   // Fetch payment account settings on component mount
   useEffect(() => {
@@ -36,13 +38,13 @@ const FlightCard: FC<FlightCardProps> = ({ flight, highlighted = false }) => {
       const taxRate = paymentAccount.taxRate ?? 0.13; // Default to 13% if not set
       const serviceFeeRate = paymentAccount.serviceFeeRate ?? 0.04; // Default to 4% if not set
       
-      const taxesAndFees = price * taxRate;
-      const serviceFee = price * serviceFeeRate;
-      const calculatedTotal = price + taxesAndFees + serviceFee;
+      const taxesAndFees = basePrice * taxRate;
+      const serviceFee = basePrice * serviceFeeRate;
+      const calculatedTotal = basePrice + taxesAndFees + serviceFee;
       
       setTotalPrice(calculatedTotal);
     }
-  }, [paymentAccount, price]);
+  }, [paymentAccount, basePrice]);
   
   // Calculate flight duration
   const duration = formatDistanceStrict(
@@ -109,8 +111,24 @@ const FlightCard: FC<FlightCardProps> = ({ flight, highlighted = false }) => {
           <div className="text-gray-500 text-sm">
             total price
           </div>
-          <div className="text-xs text-gray-400">
-            base fare: ${price.toFixed(2)}
+          <div className="mt-2">
+            <details className="text-xs text-gray-400 cursor-pointer">
+              <summary className="font-medium text-gray-500">View all class prices</summary>
+              <div className="mt-2 space-y-1 pl-2 border-l-2 border-gray-200">
+                <div className="flex items-center justify-between">
+                  <span>Economy:</span>
+                  <span>${economyPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Business:</span>
+                  <span>${businessPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>First Class:</span>
+                  <span>${firstClassPrice.toFixed(2)}</span>
+                </div>
+              </div>
+            </details>
           </div>
           <Link href={`/booking/${flight.id}`}>
             <Button 
