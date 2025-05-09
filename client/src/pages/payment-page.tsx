@@ -266,7 +266,7 @@ export default function PaymentPage() {
                     <Check className="h-6 w-6 text-green-600" />
                     <AlertTitle className="text-green-800 text-2xl font-bold">Payment Submitted Successfully!</AlertTitle>
                     <AlertDescription className="text-green-700 text-lg">
-                      <p className="mb-2">Your payment proof has been submitted and is being processed. You will be redirected to your bookings page in a moment...</p>
+                      <p className="mb-2">Your payment proof has been submitted and is being processed. You will be redirected to your bookings page in <span className="font-bold text-green-700">{redirectCountdown}</span> seconds...</p>
                       <p>You will receive an email confirmation once your payment is verified.</p>
                     </AlertDescription>
                   </Alert>
@@ -390,9 +390,14 @@ export default function PaymentPage() {
                         </div>
                         <h3 className="text-2xl font-bold text-center mb-3 text-green-800">Payment Submitted!</h3>
                         <p className="text-center text-green-700 text-lg px-8 mb-4">
-                          Your payment proof has been submitted successfully. You will be redirected to your bookings page in a moment.
+                          Your payment proof has been submitted successfully. You will be redirected to your bookings page in <span className="font-bold">{redirectCountdown}</span> seconds.
                         </p>
-                        <div className="w-16 h-1 bg-green-500 mb-3"></div>
+                        <div className="w-64 h-2 bg-gray-200 rounded-full mb-3">
+                          <div 
+                            className="h-full bg-green-500 rounded-full transition-all duration-1000"
+                            style={{ width: `${(redirectCountdown / 6) * 100}%` }}
+                          ></div>
+                        </div>
                         <p className="text-center text-gray-600">
                           Thank you for choosing SkyBooker!
                         </p>
@@ -479,7 +484,7 @@ export default function PaymentPage() {
                           disabled
                         >
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Redirecting...
+                          Redirecting in {redirectCountdown}s...
                         </Button>
                       </div>
                     )}
