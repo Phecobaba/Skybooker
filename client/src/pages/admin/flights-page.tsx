@@ -199,14 +199,14 @@ export default function AdminFlightsPage() {
       departureTime: "10:00",
       arrivalDate: new Date(),
       arrivalTime: "12:00",
-      price: "0",
-      economyPrice: "0",
-      businessPrice: "0",
-      firstClassPrice: "0",
+      price: "500",
+      economyPrice: "500",
+      businessPrice: "1000",
+      firstClassPrice: "1500",
       capacity: "200",
-      economyCapacity: "100",
-      businessCapacity: "20",
-      firstClassCapacity: "10",
+      economyCapacity: "150",
+      businessCapacity: "30",
+      firstClassCapacity: "20",
     },
   });
 
@@ -220,14 +220,14 @@ export default function AdminFlightsPage() {
       departureTime: selectedFlight ? format(new Date(selectedFlight.departureTime), "HH:mm") : "10:00",
       arrivalDate: selectedFlight ? new Date(selectedFlight.arrivalTime) : new Date(),
       arrivalTime: selectedFlight ? format(new Date(selectedFlight.arrivalTime), "HH:mm") : "12:00",
-      price: "0", // Base price for calculations
-      economyPrice: selectedFlight?.economyPrice?.toString() || "0",
-      businessPrice: selectedFlight?.businessPrice?.toString() || "0",
-      firstClassPrice: selectedFlight?.firstClassPrice?.toString() || "0",
+      price: selectedFlight?.economyPrice?.toString() || "500", // Base price for calculations
+      economyPrice: selectedFlight?.economyPrice?.toString() || "500",
+      businessPrice: selectedFlight?.businessPrice?.toString() || "1000",
+      firstClassPrice: selectedFlight?.firstClassPrice?.toString() || "1500",
       capacity: "200", // Total capacity
-      economyCapacity: selectedFlight?.economyCapacity?.toString() || "100",
-      businessCapacity: selectedFlight?.businessCapacity?.toString() || "20",
-      firstClassCapacity: selectedFlight?.firstClassCapacity?.toString() || "10",
+      economyCapacity: selectedFlight?.economyCapacity?.toString() || "150",
+      businessCapacity: selectedFlight?.businessCapacity?.toString() || "30",
+      firstClassCapacity: selectedFlight?.firstClassCapacity?.toString() || "20",
     },
   });
 
