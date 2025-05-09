@@ -50,6 +50,13 @@ const PaymentMethodCard: FC<PaymentMethodCardProps> = ({ paymentAccount }) => {
               <span className="text-gray-600">SWIFT/BIC:</span>
               <span className="col-span-2 font-medium">{paymentAccount.swiftCode}</span>
             </div>
+            
+            {paymentAccount.bankInstructions && (
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <span className="block text-gray-600 mb-1">Additional Instructions:</span>
+                <p className="whitespace-pre-line">{paymentAccount.bankInstructions}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -75,6 +82,13 @@ const PaymentMethodCard: FC<PaymentMethodCardProps> = ({ paymentAccount }) => {
               <span className="text-gray-600">Phone Number:</span>
               <span className="col-span-2 font-medium">{paymentAccount.mobileNumber}</span>
             </div>
+            
+            {paymentAccount.mobileInstructions && (
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <span className="block text-gray-600 mb-1">Additional Instructions:</span>
+                <p className="whitespace-pre-line">{paymentAccount.mobileInstructions}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
