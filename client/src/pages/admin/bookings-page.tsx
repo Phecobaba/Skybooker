@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Loader2, Search, Eye, Check, X, Filter, CalendarIcon } from "lucide-react";
 import AdminSidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
-import { BookingWithDetails } from "@shared/schema";
+import { BookingWithDetails, Location } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +70,7 @@ export default function AdminBookingsPage() {
   });
 
   // Fetch locations for filter dropdown
-  const { data: locations = [] } = useQuery({
+  const { data: locations = [] } = useQuery<Location[]>({
     queryKey: ["/api/locations"],
   });
 
@@ -1005,7 +1005,7 @@ export default function AdminBookingsPage() {
                         onSelect={(date) =>
                           setFilterOptions({
                             ...filterOptions,
-                            startDate: date,
+                            startDate: date as Date | null,
                           })
                         }
                         initialFocus
@@ -1040,7 +1040,7 @@ export default function AdminBookingsPage() {
                         onSelect={(date) =>
                           setFilterOptions({
                             ...filterOptions,
-                            endDate: date,
+                            endDate: date as Date | null,
                           })
                         }
                         initialFocus
