@@ -147,7 +147,7 @@ export default function AdminBookingsPage() {
   // Bulk delete bookings mutation
   const bulkDeleteBookingsMutation = useMutation({
     mutationFn: async (ids: number[]) => {
-      const res = await apiRequest("DELETE", `/api/admin/bookings/bulk`, { ids });
+      const res = await apiRequest("DELETE", `/api/admin/bookings`, { ids });
       return await res.json();
     },
     onSuccess: () => {
@@ -340,12 +340,22 @@ export default function AdminBookingsPage() {
           <main className="flex-1 relative overflow-y-auto focus:outline-none">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                <AdminHeader 
-                  title="Booking Management"
-                  description="View and manage flight bookings"
-                  showBackButton={true}
-                  backButtonUrl="/admin"
-                />
+                <div className="flex justify-between items-center">
+                  <AdminHeader 
+                    title="Booking Management"
+                    description="View and manage flight bookings"
+                    showBackButton={true}
+                    backButtonUrl="/admin"
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center" 
+                    onClick={() => window.location.href = "/admin"}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" /> Close
+                  </Button>
+                </div>
                 
                 <div className="flex justify-end mb-6 space-x-2">
                   <Button
