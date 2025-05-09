@@ -944,30 +944,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Booking not found" });
       }
       
-      // If status changed to "Paid", generate receipt automatically
-      if (status === "Paid" && previousStatus !== "Paid") {
-        try {
-          // Get full booking details again after status update
-          const fullBooking = await storage.getBookingById(bookingId);
-          if (fullBooking) {
-            // Generate receipt
-            const receiptPath = await generateReceiptPdf(fullBooking);
-            
-            // Update booking with receipt path
-            await storage.updateBookingReceipt(bookingId, receiptPath);
-            
-            // Send payment confirmation email with receipt
-            sendPaymentConfirmationEmail(fullBooking).catch(err => 
-              console.error("Failed to send payment confirmation email:", err)
-            );
-          }
-        } catch (genError) {
-          console.error("Error generating receipt:", genError);
-          // We'll still return success for the status update, but log the receipt generation error
-        }
-      }
-
+      // Return response immediately to improve performance
       res.json(updatedBooking);
+      
+      // Handle all post-processing tasks asynchronously after sending response
+      (async () => {
+        try {
+          // If status has changed, send status update email
+          if (status !== previousStatus) {
+            const fullBooking = await storage.getBookingById(bookingId);
+            if (fullBooking) {
+              // Send status update notification
+              try {
+                await sendBookingStatusUpdateEmail(fullBooking, previousStatus);
+                console.log(`Status update email sent for booking ID: ${bookingId} (${previousStatus} -> ${status})`);
+              } catch (emailErr) {
+                console.error("Failed to send status update email:", emailErr);
+              }
+              
+              // If status changed to "Paid", generate receipt asynchronously
+              if (status === "Paid" && previousStatus !== "Paid") {
+                try {
+                  console.log(`Generating receipt for booking ${bookingId} in background`);
+                  const receiptPath = await generateReceiptPdf(fullBooking);
+                  await storage.updateBookingReceipt(bookingId, receiptPath);
+                  
+                  // Send payment confirmation email with receipt
+                  try {
+                    await sendPaymentConfirmationEmail(fullBooking);
+                    console.log(`Payment confirmation email sent for booking ID: ${bookingId}`);
+                  } catch (paymentEmailErr) {
+                    console.error("Failed to send payment confirmation email:", paymentEmailErr);
+                  }
+                } catch (genError) {
+                  console.error("Error in background receipt generation:", genError);
+                }
+              }
+            }
+          }
+        } catch (postProcessError) {
+          console.error("Error in status update post-processing:", postProcessError);
+        }
+      })().catch(err => console.error("Background processing error:", err));
     } catch (error) {
       res.status(500).json({ message: "Failed to update booking status" });
     }
