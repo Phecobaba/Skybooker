@@ -507,30 +507,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentProof
       });
       
-      // If the status is already set to "Paid", generate receipt
+      // Return the response immediately
+      res.json(updatedBooking);
+      
+      // Handle additional processing asynchronously after response is sent
       if (updatedBooking && updatedBooking.status.toLowerCase() === "paid") {
-        try {
-          // Get full booking details with relations
-          const fullBooking = await storage.getBookingById(bookingId);
-          if (fullBooking) {
-            // Generate receipt if it doesn't exist
-            if (!fullBooking.receiptPath) {
+        // Use a "fire and forget" approach for post-processing
+        (async () => {
+          try {
+            // Get full booking details with relations for the background process
+            const fullBooking = await storage.getBookingById(bookingId);
+            if (fullBooking && !fullBooking.receiptPath) {
+              console.log(`Generating receipt for booking ${bookingId} in background`);
               const receiptPath = await generateReceiptPdf(fullBooking);
               await storage.updateBookingReceipt(bookingId, receiptPath);
-              // Update our local reference too
-              if (updatedBooking) {
-                updatedBooking.receiptPath = receiptPath;
-              }
             }
+          } catch (genError) {
+            console.error("Error in background receipt generation:", genError);
           }
-        } catch (genError) {
-          console.error("Error generating receipt:", genError);
-          // We'll still return success for the payment update, but log the receipt generation error
-        }
+        })().catch(err => console.error("Background processing error:", err));
       }
-
-      res.json(updatedBooking);
     } catch (error) {
+      console.error("Payment processing error:", error);
       res.status(500).json({ message: "Failed to update payment" });
     }
   });
