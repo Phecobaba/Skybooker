@@ -51,8 +51,8 @@ export default function AdminBookingsPage() {
     dateRange: "all",
     startDate: null,
     endDate: null,
-    originCode: "",
-    destinationCode: "",
+    originCode: "all_origins",
+    destinationCode: "all_destinations",
   });
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -261,8 +261,8 @@ export default function AdminBookingsPage() {
                     Filter
                     {(filterOptions.status !== "all" ||
                       filterOptions.dateRange !== "all" ||
-                      filterOptions.originCode ||
-                      filterOptions.destinationCode) && (
+                      filterOptions.originCode !== "all_origins" ||
+                      filterOptions.destinationCode !== "all_destinations") && (
                       <span className="ml-1 w-2 h-2 rounded-full bg-primary"></span>
                     )}
                   </Button>
@@ -273,8 +273,8 @@ export default function AdminBookingsPage() {
                     disabled={
                       filterOptions.status === "all" &&
                       filterOptions.dateRange === "all" &&
-                      !filterOptions.originCode &&
-                      !filterOptions.destinationCode &&
+                      filterOptions.originCode === "all_origins" &&
+                      filterOptions.destinationCode === "all_destinations" &&
                       !searchText
                     }
                   >
@@ -312,11 +312,13 @@ export default function AdminBookingsPage() {
                       No bookings found
                     </h3>
                     <p className="mt-2 text-gray-500">
-                      {searchText || filterOptions.status !== "all" || filterOptions.dateRange !== "all" || filterOptions.originCode || filterOptions.destinationCode
+                      {searchText || filterOptions.status !== "all" || filterOptions.dateRange !== "all" || 
+                       filterOptions.originCode !== "all_origins" || filterOptions.destinationCode !== "all_destinations"
                         ? "No bookings match your search criteria."
                         : "There are no bookings in the system yet."}
                     </p>
-                    {(searchText || filterOptions.status !== "all" || filterOptions.dateRange !== "all" || filterOptions.originCode || filterOptions.destinationCode) && (
+                    {(searchText || filterOptions.status !== "all" || filterOptions.dateRange !== "all" || 
+                      filterOptions.originCode !== "all_origins" || filterOptions.destinationCode !== "all_destinations") && (
                       <Button
                         variant="outline"
                         onClick={resetFilters}
