@@ -273,7 +273,18 @@ export default function AdminDashboardPage() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                ${booking.flight.price.toFixed(2)}
+                                ${booking.ticketPrice ? 
+                                  booking.ticketPrice.toFixed(2) : 
+                                  (booking.travelClass === 'Business' 
+                                    ? booking.flight.businessPrice.toFixed(2)
+                                    : booking.travelClass === 'First Class'
+                                      ? booking.flight.firstClassPrice.toFixed(2)
+                                      : booking.flight.economyPrice.toFixed(2)
+                                  )
+                                }
+                                <div className="text-xs text-gray-400 mt-1">
+                                  {booking.travelClass || 'Economy'} Class
+                                </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <Link href={`/admin/bookings?id=${booking.id}`}>
@@ -360,7 +371,7 @@ export default function AdminDashboardPage() {
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
-                              Price
+                              Prices (Economy, Business, First)
                             </th>
                             <th
                               scope="col"
@@ -405,7 +416,12 @@ export default function AdminDashboardPage() {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                ${flight.price.toFixed(2)}
+                                ${flight.economyPrice.toFixed(2)}
+                                {flight.businessPrice && flight.firstClassPrice && (
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    B: ${flight.businessPrice.toFixed(2)} | F: ${flight.firstClassPrice.toFixed(2)}
+                                  </div>
+                                )}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <Link href={`/admin/flights?id=${flight.id}&action=edit`}>
