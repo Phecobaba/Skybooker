@@ -139,7 +139,9 @@ export default function Navbar() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link href="/profile">Profile</Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Link href="/my-bookings">My Bookings</Link>
                     </DropdownMenuItem>
@@ -244,12 +246,11 @@ export default function Navbar() {
                     </Button>
                   </div>
                   <div className="mt-3 space-y-1">
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                    >
-                      Profile
-                    </a>
+                    <Link href="/profile">
+                      <span className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 cursor-pointer">
+                        Profile
+                      </span>
+                    </Link>
                     <Link href="/my-bookings">
                       <span className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 cursor-pointer">
                         My Bookings

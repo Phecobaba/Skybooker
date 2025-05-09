@@ -10,6 +10,8 @@ import SearchResultsPage from "@/pages/search-results-page";
 import BookingPage from "@/pages/booking-page";
 import PaymentPage from "@/pages/payment-page";
 import MyBookingsPage from "@/pages/my-bookings-page";
+import ProfilePage from "@/pages/profile-page";
+import ResetPasswordPage from "@/pages/reset-password-page";
 import AdminDashboardPage from "@/pages/admin/dashboard-page";
 import AdminFlightsPage from "@/pages/admin/flights-page";
 import AdminLocationsPage from "@/pages/admin/locations-page";
@@ -35,6 +37,8 @@ function Router() {
       <ProtectedRoute path="/booking/:flightId" component={BookingPage} />
       <ProtectedRoute path="/payment/:bookingId" component={PaymentPage} />
       <ProtectedRoute path="/my-bookings" component={MyBookingsPage} />
+      <ProtectedRoute path="/profile" component={ProfilePage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
       
       {/* Admin Routes */}
       <ProtectedRoute path="/admin" component={AdminDashboardPage} adminOnly />
