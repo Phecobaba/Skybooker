@@ -522,7 +522,7 @@ export default function AdminPaymentsPage() {
                       {selectedBooking.paymentProof ? (
                         <div className="text-center">
                           <img
-                            src={`/uploads/${selectedBooking.paymentProof}`}
+                            src={selectedBooking.paymentProof}
                             alt="Payment Proof"
                             className="max-w-full h-auto mx-auto rounded-md"
                             style={{ maxHeight: "300px" }}
