@@ -450,8 +450,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Booking not found" });
       }
 
-      // Users can only view their own bookings (admin can see all)
-      if (booking.userId !== req.user.id && !req.user.isAdmin) {
+      // Users can view their own bookings or bookings they created
+      if ((booking.userId !== req.user.id) && !req.user.isAdmin) {
         return res.status(403).json({ message: "You don't have permission to view this booking" });
       }
 

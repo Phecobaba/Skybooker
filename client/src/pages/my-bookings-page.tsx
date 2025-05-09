@@ -45,10 +45,10 @@ export default function MyBookingsPage() {
       filter === "all" ||
       (filter === "upcoming" &&
         new Date(booking.flight.departureTime) > new Date() &&
-        (booking.status === "Confirmed" || booking.status === "Pending")) ||
+        (booking.status === "Confirmed" || booking.status.includes("Pending"))) ||
       (filter === "past" &&
         new Date(booking.flight.departureTime) < new Date()) ||
-      (filter === "pending" && booking.status === "Pending") ||
+      (filter === "pending" && booking.status.includes("Pending")) ||
       (filter === "confirmed" && booking.status === "Confirmed");
 
     // Search by route, status, or id
@@ -74,17 +74,18 @@ export default function MyBookingsPage() {
   };
 
   const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "Confirmed":
-        return "bg-green-100 text-green-800";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "Declined":
-        return "bg-red-100 text-red-800";
-      case "Completed":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+    if (status === "Confirmed") {
+      return "bg-green-100 text-green-800";
+    } else if (status.includes("Pending")) {
+      return "bg-yellow-100 text-yellow-800";
+    } else if (status === "Declined") {
+      return "bg-red-100 text-red-800";
+    } else if (status === "Paid") {
+      return "bg-blue-100 text-blue-800";
+    } else if (status === "Completed") {
+      return "bg-gray-100 text-gray-800";
+    } else {
+      return "bg-gray-100 text-gray-800";
     }
   };
 
