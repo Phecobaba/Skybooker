@@ -1,7 +1,7 @@
 import { type Express } from "express";
 import express from 'express';
 import { createServer, type Server } from "http";
-import { setupAuth, isAdmin, hashPassword, comparePasswords } from "./auth";
+import { setupAuth, isAdmin, hashPassword, comparePasswords, validatePasswordStrength } from "./auth";
 import { storage } from "./storage";
 import multer from "multer";
 import path from "path";
@@ -22,18 +22,30 @@ import {
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
+  message: { message: 'Too many requests from this IP, please try again later.' },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skipSuccessfulRequests: true, // Only count failed requests against the rate limit
 });
 
 // Stricter rate limiter for sensitive operations
 export const sensitiveApiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20, // limit each IP to 20 requests per windowMs
-  message: 'Too many sensitive operations from this IP, please try again later.',
+  message: { message: 'Too many sensitive operations from this IP, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: false, // Count all requests for sensitive endpoints
+});
+
+// Extra strict rate limiter specifically for auth endpoints to prevent brute force
+export const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  max: 10, // limit each IP to 10 login/register attempts per hour
+  message: { message: 'Too many login attempts, please try again after 60 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false, // Count all auth attempts
 });
 
 // Set up multer for file uploads
@@ -154,9 +166,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Current password is incorrect" });
       }
       
-      // Validate new password
-      if (newPassword.length < 6) {
-        return res.status(400).json({ message: "New password must be at least 6 characters long" });
+      // Validate new password strength
+      const passwordCheck = validatePasswordStrength(newPassword);
+      if (!passwordCheck.isValid) {
+        return res.status(400).json({ message: passwordCheck.message });
       }
       
       // Hash and update the password
@@ -231,9 +244,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email, token, and new password are required" });
       }
       
-      // Validate new password
-      if (newPassword.length < 6) {
-        return res.status(400).json({ message: "New password must be at least 6 characters long" });
+      // Validate new password strength
+      const passwordCheck = validatePasswordStrength(newPassword);
+      if (!passwordCheck.isValid) {
+        return res.status(400).json({ message: passwordCheck.message });
       }
       
       // Get the reset token data
@@ -295,9 +309,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Current password is incorrect" });
       }
       
-      // Validate new password
-      if (newPassword.length < 6) {
-        return res.status(400).json({ message: "New password must be at least 6 characters long" });
+      // Validate new password strength
+      const passwordCheck = validatePasswordStrength(newPassword);
+      if (!passwordCheck.isValid) {
+        return res.status(400).json({ message: passwordCheck.message });
       }
       
       // Hash and update the password

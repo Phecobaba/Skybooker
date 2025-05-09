@@ -16,16 +16,44 @@ declare global {
 
 const scryptAsync = promisify(scrypt);
 
+// Strong password validation function
+export function validatePasswordStrength(password: string): { isValid: boolean, message: string } {
+  if (password.length < 8) {
+    return { isValid: false, message: "Password must be at least 8 characters long" };
+  }
+  
+  // Check for at least one number
+  if (!/\d/.test(password)) {
+    return { isValid: false, message: "Password must contain at least one number" };
+  }
+  
+  // Check for at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    return { isValid: false, message: "Password must contain at least one uppercase letter" };
+  }
+  
+  // Check for at least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    return { isValid: false, message: "Password must contain at least one lowercase letter" };
+  }
+  
+  return { isValid: true, message: "Password meets strength requirements" };
+}
+
 export async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  // Use a larger salt size (32 bytes) for better security
+  const salt = randomBytes(32).toString("hex");
+  // Use a higher cost factor (128) for better security
+  const buf = (await scryptAsync(password, salt, 128)) as Buffer;
   return `${buf.toString("hex")}.${salt}`;
 }
 
 export async function comparePasswords(supplied: string, stored: string) {
   const [hashed, salt] = stored.split(".");
   const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  // Determine the key length based on the hash length (support both old and new hash formats)
+  const keylen = hashedBuf.length;
+  const suppliedBuf = (await scryptAsync(supplied, salt, keylen)) as Buffer;
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
@@ -115,7 +143,7 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Invalid input", errors: parseResult.error.errors });
       }
 
-      const { username, email } = req.body;
+      const { username, email, password } = req.body;
       
       // Check if username or email already exists
       const existingUser = await storage.getUserByUsername(username);
@@ -127,9 +155,15 @@ export function setupAuth(app: Express) {
       if (existingEmail) {
         return res.status(400).json({ message: "Email already in use" });
       }
+      
+      // Validate password strength
+      const passwordCheck = validatePasswordStrength(password);
+      if (!passwordCheck.isValid) {
+        return res.status(400).json({ message: passwordCheck.message });
+      }
 
       // Hash password and create user
-      const hashedPassword = await hashPassword(req.body.password);
+      const hashedPassword = await hashPassword(password);
       const user = await storage.createUser({
         ...req.body,
         password: hashedPassword,
