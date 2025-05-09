@@ -299,6 +299,27 @@ export default function AdminPaymentSettingsPage() {
                                     </FormItem>
                                   )}
                                 />
+
+                                <FormField
+                                  control={form.control}
+                                  name="bankInstructions"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Bank Transfer Instructions</FormLabel>
+                                      <FormControl>
+                                        <textarea
+                                          className="flex h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                          placeholder="Enter any additional instructions for bank transfers"
+                                          {...field}
+                                        />
+                                      </FormControl>
+                                      <FormDescription>
+                                        Additional instructions to show customers when making bank transfers.
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                               </TabsContent>
 
                               <TabsContent value="mobile" className="space-y-4">
@@ -330,6 +351,27 @@ export default function AdminPaymentSettingsPage() {
                                       </FormControl>
                                       <FormDescription>
                                         The phone number associated with your mobile money account.
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={form.control}
+                                  name="mobileInstructions"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Mobile Money Instructions</FormLabel>
+                                      <FormControl>
+                                        <textarea
+                                          className="flex h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                          placeholder="Enter any additional instructions for mobile money transfers"
+                                          {...field}
+                                        />
+                                      </FormControl>
+                                      <FormDescription>
+                                        Additional instructions to show customers when making mobile money payments.
                                       </FormDescription>
                                       <FormMessage />
                                     </FormItem>
@@ -588,6 +630,13 @@ export default function AdminPaymentSettingsPage() {
                                   Please use your booking reference number as the payment reference.
                                   After making the payment, upload a screenshot or receipt of the payment on the booking payment page.
                                 </p>
+                                
+                                {form.watch("bankInstructions") && (
+                                  <div className="mt-3 p-3 bg-gray-100 rounded-md border border-gray-200">
+                                    <p className="text-sm font-medium">Additional Instructions:</p>
+                                    <p className="text-sm whitespace-pre-line mt-1">{form.watch("bankInstructions")}</p>
+                                  </div>
+                                )}
                               </div>
                             </AccordionContent>
                           </AccordionItem>
@@ -605,6 +654,13 @@ export default function AdminPaymentSettingsPage() {
                                   Please use your booking reference number as the payment reference.
                                   After making the payment, upload a screenshot or receipt of the payment on the booking payment page.
                                 </p>
+                                
+                                {form.watch("mobileInstructions") && (
+                                  <div className="mt-3 p-3 bg-gray-100 rounded-md border border-gray-200">
+                                    <p className="text-sm font-medium">Additional Instructions:</p>
+                                    <p className="text-sm whitespace-pre-line mt-1">{form.watch("mobileInstructions")}</p>
+                                  </div>
+                                )}
                               </div>
                             </AccordionContent>
                           </AccordionItem>
