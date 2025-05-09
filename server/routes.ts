@@ -939,6 +939,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete a single booking (admin only)
+  app.delete("/api/admin/bookings/:id", sensitiveApiLimiter, isAdmin, async (req, res) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      if (isNaN(bookingId)) {
+        return res.status(400).json({ message: "Invalid booking ID" });
+      }
+      
+      // Check if booking exists
+      const booking = await storage.getBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      // Delete the booking
+      const success = await storage.deleteBooking(bookingId);
+      
+      if (success) {
+        res.status(200).json({ message: "Booking deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete booking" });
+      }
+    } catch (error) {
+      console.error("Error deleting booking:", error);
+      res.status(500).json({ message: "Failed to delete booking" });
+    }
+  });
+  
+  // Delete multiple bookings (admin only)
+  app.delete("/api/admin/bookings", sensitiveApiLimiter, isAdmin, async (req, res) => {
+    try {
+      const { ids } = req.body;
+      
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ message: "Invalid or empty booking IDs array" });
+      }
+      
+      // Convert all IDs to numbers and validate
+      const bookingIds = ids.map(id => parseInt(id));
+      if (bookingIds.some(id => isNaN(id))) {
+        return res.status(400).json({ message: "Invalid booking ID in the array" });
+      }
+      
+      // Delete the bookings
+      const deletedCount = await storage.deleteManyBookings(bookingIds);
+      
+      res.status(200).json({ 
+        message: `${deletedCount} booking(s) deleted successfully`,
+        deletedCount
+      });
+    } catch (error) {
+      console.error("Error deleting multiple bookings:", error);
+      res.status(500).json({ message: "Failed to delete bookings" });
+    }
+  });
+
   // Get all users (admin only)
   app.get("/api/admin/users", isAdmin, async (req, res) => {
     try {

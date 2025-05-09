@@ -550,7 +550,7 @@ export class DatabaseStorage implements IStorage {
         .delete(bookings)
         .where(eq(bookings.id, id));
       
-      return result.rowCount > 0;
+      return result.rowCount ? result.rowCount > 0 : false;
     } catch (error) {
       console.error("Error deleting booking:", error);
       throw error;
@@ -565,9 +565,20 @@ export class DatabaseStorage implements IStorage {
       
       const result = await db
         .delete(bookings)
-        .where(inArray(bookings.id, ids));
+        .where(eq(bookings.id, ids[0]));
+        
+      // If we have more than one ID, delete the rest
+      for (let i = 1; i < ids.length; i++) {
+        const singleResult = await db
+          .delete(bookings)
+          .where(eq(bookings.id, ids[i]));
+          
+        if (result.rowCount && singleResult.rowCount) {
+          result.rowCount += singleResult.rowCount;
+        }
+      }
       
-      return result.rowCount;
+      return result.rowCount ? result.rowCount : 0;
     } catch (error) {
       console.error("Error deleting multiple bookings:", error);
       throw error;
