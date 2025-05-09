@@ -39,12 +39,14 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
       // Add booking details to the PDF
       const { flight, user } = booking;
       
-      // Add logo and header
+      // Add logo and header with theme color
       doc
+        .fillColor('#3b82f6') // Use the theme blue color
         .fontSize(25)
         .text('SkyBooker', { align: 'center' })
         .fontSize(15)
         .text('Flight Booking Receipt', { align: 'center' })
+        .fillColor('#000000') // Reset to black for the rest of the text
         .moveDown();
       
       // Add a horizontal line
@@ -68,8 +70,10 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
       
       // Customer details
       doc
+        .fillColor('#3b82f6') // Theme color for section headers
         .fontSize(14)
         .text('Customer Details')
+        .fillColor('#000000') // Reset to black
         .moveDown(0.5);
       
       doc
@@ -82,8 +86,10 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
       
       // Flight details
       doc
+        .fillColor('#3b82f6') // Theme color for section headers
         .fontSize(14)
         .text('Flight Details')
+        .fillColor('#000000') // Reset to black
         .moveDown(0.5);
       
       doc
@@ -102,8 +108,10 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
       
       // Payment details
       doc
+        .fillColor('#3b82f6') // Theme color for section headers
         .fontSize(14)
         .text('Payment Details')
+        .fillColor('#000000') // Reset to black
         .moveDown(0.5);
       
       doc
@@ -138,8 +146,10 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
       doc
         .moveDown(0.5)
         .fontSize(12)
+        .fillColor('#3b82f6') // Theme color for total amount
         .text('Total Amount:', { continued: true, indent: 10, bold: true })
-        .text(`  $${totalAmount.toFixed(2)}`, { align: 'right', bold: true });
+        .text(`  $${totalAmount.toFixed(2)}`, { align: 'right', bold: true })
+        .fillColor('#000000'); // Reset to black
       
       // Footer
       doc
@@ -153,7 +163,9 @@ export async function generateReceiptPdf(booking: BookingWithDetails): Promise<s
       
       doc
         .fontSize(10)
+        .fillColor('#3b82f6') // Theme color for the thank you message
         .text('Thank you for choosing SkyBooker for your travel needs.', { align: 'center' })
+        .fillColor('#666666') // Light gray for less important text
         .text('This is an electronically generated receipt and does not require a signature.', { align: 'center' });
       
       // Finalize the PDF
