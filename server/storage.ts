@@ -139,8 +139,10 @@ export class MemStorage implements IStorage {
       accountName: "SkyBooker Flights Ltd",
       accountNumber: "8762-1095-3321-4000",
       swiftCode: "GTBIUS1234",
+      bankInstructions: "Please include your booking reference in the payment description.",
       mobileProvider: "PayMobile",
       mobileNumber: "+1 (555) 987-6543",
+      mobileInstructions: "Upload a screenshot of the payment confirmation.",
       bankEnabled: true,
       mobileEnabled: true,
       taxRate: 0.13,
@@ -194,8 +196,14 @@ export class MemStorage implements IStorage {
       destinationId: 6, // CDG
       departureTime: jfkToCdgFlight1.departure,
       arrivalTime: jfkToCdgFlight1.arrival,
-      price: 699,
-      capacity: 200
+      price: 699, // Legacy price
+      capacity: 200, // Legacy capacity
+      economyPrice: 699,
+      businessPrice: 1299,
+      firstClassPrice: 2499,
+      economyCapacity: 150,
+      businessCapacity: 40,
+      firstClassCapacity: 10
     });
     
     const jfkToCdgFlight2 = createFlightTimes(tomorrow, 11, 7);
@@ -205,8 +213,14 @@ export class MemStorage implements IStorage {
       destinationId: 6, // CDG
       departureTime: jfkToCdgFlight2.departure,
       arrivalTime: jfkToCdgFlight2.arrival,
-      price: 749,
-      capacity: 150
+      price: 749, // Legacy price
+      capacity: 150, // Legacy capacity
+      economyPrice: 749,
+      businessPrice: 1399,
+      firstClassPrice: 2599,
+      economyCapacity: 110,
+      businessCapacity: 30,
+      firstClassCapacity: 10
     });
     
     const jfkToCdgFlight3 = createFlightTimes(tomorrow, 15, 7);
@@ -216,8 +230,14 @@ export class MemStorage implements IStorage {
       destinationId: 6, // CDG
       departureTime: jfkToCdgFlight3.departure,
       arrivalTime: jfkToCdgFlight3.arrival,
-      price: 599,
-      capacity: 180
+      price: 599, // Legacy price
+      capacity: 180, // Legacy capacity
+      economyPrice: 599,
+      businessPrice: 1199,
+      firstClassPrice: 2399,
+      economyCapacity: 140,
+      businessCapacity: 30,
+      firstClassCapacity: 10
     });
     
     // Create LAX to HND flights
@@ -228,8 +248,14 @@ export class MemStorage implements IStorage {
       destinationId: 7, // HND
       departureTime: laxToHndFlight.departure,
       arrivalTime: laxToHndFlight.arrival,
-      price: 1200,
-      capacity: 250
+      price: 1200, // Legacy price
+      capacity: 250, // Legacy capacity
+      economyPrice: 1200,
+      businessPrice: 2499,
+      firstClassPrice: 4999,
+      economyCapacity: 200,
+      businessCapacity: 35,
+      firstClassCapacity: 15
     });
     
     // Create DFW to LHR flights
@@ -240,8 +266,14 @@ export class MemStorage implements IStorage {
       destinationId: 5, // LHR
       departureTime: dfwToLhrFlight.departure,
       arrivalTime: dfwToLhrFlight.arrival,
-      price: 850,
-      capacity: 220
+      price: 850, // Legacy price
+      capacity: 220, // Legacy capacity
+      economyPrice: 850,
+      businessPrice: 1750,
+      firstClassPrice: 3450,
+      economyCapacity: 170,
+      businessCapacity: 40,
+      firstClassCapacity: 10
     });
     
     this.currentUserId = 2; // Start from 2 since we already have admin
