@@ -5,6 +5,7 @@ import { Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { BookingWithDetails } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import ReceiptDownloadButton from "@/components/ReceiptDownloadButton";
 
 export default function MyBookingsPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,9 +35,13 @@ export default function MyBookingsPage() {
     data: bookings = [],
     isLoading,
     error,
+    refetch
   } = useQuery<BookingWithDetails[]>({
     queryKey: ["/api/bookings"],
     enabled: !!user,
+    // Lower staleTime to ensure more frequent refreshes
+    staleTime: 10000, // 10 seconds
+    refetchOnWindowFocus: true
   });
 
   // Filter and search bookings
@@ -118,25 +124,47 @@ export default function MyBookingsPage() {
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="p-5 border-b border-gray-200">
                   <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center">
-                      <label className="text-sm font-medium text-gray-700 mr-2">
-                        Filter by:
-                      </label>
-                      <Select
-                        value={filter}
-                        onValueChange={setFilter}
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center">
+                        <label className="text-sm font-medium text-gray-700 mr-2">
+                          Filter by:
+                        </label>
+                        <Select
+                          value={filter}
+                          onValueChange={setFilter}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="All Bookings" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Bookings</SelectItem>
+                            <SelectItem value="upcoming">Upcoming</SelectItem>
+                            <SelectItem value="past">Past</SelectItem>
+                            <SelectItem value="pending">Pending Payment</SelectItem>
+                            <SelectItem value="confirmed">Confirmed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          refetch();
+                          toast({
+                            title: "Refreshed",
+                            description: "Your booking list has been refreshed",
+                          });
+                        }}
+                        className="flex items-center"
                       >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="All Bookings" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Bookings</SelectItem>
-                          <SelectItem value="upcoming">Upcoming</SelectItem>
-                          <SelectItem value="past">Past</SelectItem>
-                          <SelectItem value="pending">Pending Payment</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                          <path d="M21 3v5h-5"></path>
+                          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                          <path d="M8 16H3v5"></path>
+                        </svg>
+                        Refresh
+                      </Button>
                     </div>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

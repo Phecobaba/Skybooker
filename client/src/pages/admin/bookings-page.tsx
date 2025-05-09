@@ -105,7 +105,9 @@ export default function AdminBookingsPage() {
       return await res.json();
     },
     onSuccess: () => {
+      // Invalidate both admin and user bookings queries
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
       toast({
         title: "Booking status updated",
         description: "The booking status has been updated successfully",
@@ -127,7 +129,9 @@ export default function AdminBookingsPage() {
       return await res.json();
     },
     onSuccess: () => {
+      // Invalidate both admin and user bookings queries
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
       toast({
         title: "Booking deleted",
         description: "The booking has been permanently deleted",
@@ -151,7 +155,9 @@ export default function AdminBookingsPage() {
       return await res.json();
     },
     onSuccess: () => {
+      // Invalidate both admin and user bookings queries
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
       toast({
         title: "Bookings deleted",
         description: `Successfully deleted ${selectedBookings.length} bookings`,
