@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect, Link } from "wouter";
-import { Lock, User, UserPlus, Home } from "lucide-react";
+import { Lock, UserPlus, Home } from "lucide-react";
 import { insertUserSchema } from "@shared/schema";
 
 const loginSchema = z.object({

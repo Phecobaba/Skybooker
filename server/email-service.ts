@@ -1,8 +1,7 @@
 import nodemailer from 'nodemailer';
-import { Booking, BookingWithDetails, User } from '@shared/schema';
+import { BookingWithDetails } from '@shared/schema';
 import { generateReceiptPdf } from './pdf-service';
 import path from 'path';
-import fs from 'fs';
 
 // Create a test account or use environment variables in production
 let transporter: nodemailer.Transporter;
@@ -22,7 +21,7 @@ export async function initializeEmailService() {
           pass: process.env.MAILJET_SECRET_KEY
         }
       });
-      
+
       console.log('Email service initialized with Mailjet');
       return transporter;
     } catch (error) {
@@ -30,11 +29,12 @@ export async function initializeEmailService() {
       // Fall back to test account if Mailjet setup fails
     }
   }
-  
+
   // For testing, we'll use ethereal email (a fake SMTP service)
   try {
     const testAccount = await nodemailer.createTestAccount();
-    
+    console.log(JSON.stringify(testAccount, null, 2))
+
     // Create a transporter object
     transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
@@ -45,12 +45,12 @@ export async function initializeEmailService() {
         pass: testAccount.pass
       }
     });
-    
+
     console.log('Email service initialized with test account');
     console.log(`Test email account: ${testAccount.user}`);
     console.log(`Preview URL: https://ethereal.email/login`);
     console.log(`(Use the test email and password to login and view sent emails)`);
-    
+
     return transporter;
   } catch (error) {
     console.error('Failed to initialize test email service:', error);
@@ -63,10 +63,10 @@ export async function sendBookingConfirmationEmail(booking: BookingWithDetails) 
   if (!transporter) {
     await initializeEmailService();
   }
-  
+
   try {
     const { user, flight } = booking;
-    
+
     const mailOptions = {
       from: '"SkyBooker" <bookings@skybooker.com>',
       to: booking.passengerEmail,
@@ -94,15 +94,15 @@ export async function sendBookingConfirmationEmail(booking: BookingWithDetails) 
         </div>
       `
     };
-    
+
     const info = await transporter.sendMail(mailOptions);
     console.log(`Booking confirmation email sent: ${info.messageId}`);
-    
+
     // Only log preview URL for test accounts (Ethereal)
     if (!(process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) && nodemailer.getTestMessageUrl(info)) {
       console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
-    
+
     return info;
   } catch (error) {
     console.error('Error sending booking confirmation email:', error);
@@ -115,10 +115,10 @@ export async function sendBookingStatusUpdateEmail(booking: BookingWithDetails, 
   if (!transporter) {
     await initializeEmailService();
   }
-  
+
   try {
     const { flight } = booking;
-    
+
     const mailOptions = {
       from: '"SkyBooker" <updates@skybooker.com>',
       to: booking.passengerEmail,
@@ -148,15 +148,15 @@ export async function sendBookingStatusUpdateEmail(booking: BookingWithDetails, 
         </div>
       `
     };
-    
+
     const info = await transporter.sendMail(mailOptions);
     console.log(`Booking status update email sent: ${info.messageId}`);
-    
+
     // Only log preview URL for test accounts (Ethereal)
     if (!(process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) && nodemailer.getTestMessageUrl(info)) {
       console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
-    
+
     return info;
   } catch (error) {
     console.error('Error sending booking status update email:', error);
@@ -169,20 +169,20 @@ export async function sendPaymentConfirmationEmail(booking: BookingWithDetails) 
   if (!transporter) {
     await initializeEmailService();
   }
-  
+
   try {
     const { flight } = booking;
-    
+
     // Generate PDF receipt
     const pdfPath = await generateReceiptPdf(booking);
     const absolutePdfPath = path.join(process.cwd(), pdfPath.replace(/^\//, ''));
-    
+
     // Save receipt path to booking if needed
     if (!booking.receiptPath) {
       // This could be saved to the database, but we'll keep it simple for now
       console.log(`Generated receipt PDF: ${pdfPath}`);
     }
-    
+
     const mailOptions = {
       from: '"SkyBooker Payments" <payments@skybooker.com>',
       to: booking.passengerEmail,
@@ -218,15 +218,15 @@ export async function sendPaymentConfirmationEmail(booking: BookingWithDetails) 
         }
       ]
     };
-    
+
     const info = await transporter.sendMail(mailOptions);
     console.log(`Payment confirmation email with receipt sent: ${info.messageId}`);
-    
+
     // Only log preview URL for test accounts (Ethereal)
     if (!(process.env.MAILJET_API_KEY && process.env.MAILJET_SECRET_KEY) && nodemailer.getTestMessageUrl(info)) {
       console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
-    
+
     return info;
   } catch (error) {
     console.error('Error sending payment confirmation email:', error);
