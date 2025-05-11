@@ -3,22 +3,21 @@ import { Helmet } from "react-helmet";
 import AdminSidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import StatsCard from "@/components/admin/StatsCard";
-import { 
-  Search, 
-  UserCircle, 
-  ChevronLeft, 
-  ChevronRight, 
-  PlaneTakeoff, 
-  CalendarCheck, 
-  Clock, 
-  Users 
+import {
+  Search,
+  UserCircle,
+  ChevronLeft,
+  ChevronRight,
+  PlaneTakeoff,
+  CalendarCheck,
+  Clock,
+  Users
 } from "lucide-react";
-import { 
-  BookingWithDetails, 
-  FlightWithLocations 
+import {
+  BookingWithDetails,
+  FlightWithLocations
 } from "@shared/schema";
 import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -35,9 +34,9 @@ export default function AdminDashboardPage() {
   });
 
   // Get pending payments (both "Pending" and "Pending Payment" statuses)
-  const pendingBookings = bookings.filter(booking => 
+  const pendingBookings = bookings.filter(booking =>
     booking.status === "Pending" || booking.status === "Pending Payment");
-  
+
   // Get recent bookings (latest 5)
   const recentBookings = [...bookings]
     .sort((a, b) => new Date(b.bookingDate).getTime() - new Date(a.bookingDate).getTime())
@@ -111,7 +110,7 @@ export default function AdminDashboardPage() {
           <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-100">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                <AdminHeader 
+                <AdminHeader
                   title="Dashboard"
                   description="Overview of your flight booking system"
                   showBackButton={false}
@@ -259,23 +258,22 @@ export default function AdminDashboardPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
-                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                    booking.status === "Confirmed"
+                                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${booking.status === "Confirmed"
                                       ? "bg-green-100 text-green-800"
                                       : booking.status === "Pending" || booking.status === "Pending Payment"
-                                      ? "bg-yellow-100 text-yellow-800"
-                                      : booking.status === "Completed"
-                                      ? "bg-blue-100 text-blue-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : booking.status === "Completed"
+                                          ? "bg-blue-100 text-blue-800"
+                                          : "bg-red-100 text-red-800"
+                                    }`}
                                 >
                                   {booking.status}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                ${booking.ticketPrice ? 
-                                  booking.ticketPrice.toFixed(2) : 
-                                  (booking.travelClass === 'Business' 
+                                ${booking.ticketPrice ?
+                                  booking.ticketPrice.toFixed(2) :
+                                  (booking.travelClass === 'Business'
                                     ? booking.flight.businessPrice.toFixed(2)
                                     : booking.travelClass === 'First Class'
                                       ? booking.flight.firstClassPrice.toFixed(2)

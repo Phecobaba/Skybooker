@@ -1,14 +1,13 @@
-import { users, locations, flights, bookings, paymentAccounts, siteSettings, pageContents } from "@shared/schema";
-import type { 
-  User, 
-  InsertUser, 
-  Location, 
-  InsertLocation, 
-  Flight, 
-  InsertFlight, 
-  Booking, 
-  InsertBooking, 
-  PaymentAccount, 
+import type {
+  User,
+  InsertUser,
+  Location,
+  InsertLocation,
+  Flight,
+  InsertFlight,
+  Booking,
+  InsertBooking,
+  PaymentAccount,
   InsertPaymentAccount,
   FlightWithLocations,
   BookingWithDetails,
@@ -63,13 +62,13 @@ export interface IStorage {
   // Payment Accounts
   getPaymentAccounts(): Promise<PaymentAccount[]>;
   updatePaymentAccount(account: InsertPaymentAccount): Promise<PaymentAccount>;
-  
+
   // Site Settings
   getSiteSettings(): Promise<SiteSetting[]>;
   getSiteSettingByKey(key: string): Promise<SiteSetting | undefined>;
   upsertSiteSetting(setting: InsertSiteSetting): Promise<SiteSetting>;
   deleteSiteSetting(key: string): Promise<boolean>;
-  
+
   // Page Contents
   getAllPageContents(): Promise<PageContent[]>;
   getPageContentBySlug(slug: string): Promise<PageContent | undefined>;
@@ -89,9 +88,9 @@ export class MemStorage implements IStorage {
   private paymentAccounts: Map<number, PaymentAccount>;
   private siteSettings: Map<number, SiteSetting>;
   private pageContents: Map<number, PageContent>;
-  
+
   sessionStore: any; // Using any for session store type
-  
+
   currentUserId: number;
   currentLocationId: number;
   currentFlightId: number;
@@ -108,7 +107,7 @@ export class MemStorage implements IStorage {
     this.paymentAccounts = new Map();
     this.siteSettings = new Map();
     this.pageContents = new Map();
-    
+
     this.currentUserId = 1;
     this.currentLocationId = 1;
     this.currentFlightId = 1;
@@ -116,22 +115,22 @@ export class MemStorage implements IStorage {
     this.currentPaymentAccountId = 1;
     this.currentSiteSettingId = 1;
     this.currentPageContentId = 1;
-    
+
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // 24 hours
     });
-    
+
     // Create an initial admin user
     this.users.set(1, {
       id: 1,
       username: "admin",
-      password: "8a1d5f83b96f7dd9e49e991a63603c5d8ea65ba19ac7444a079ea5ddf8b97cc8a50e7b33b618d94e9f7dd13b81e33812e7843575cec87e2de6cc1f6f6fc9c7a5.d4c6c53f30b4c29e2d8f524e7ca7bffe", // "adminpassword"
+      password: "062e8e8231a59ae5c0fdcd189629cd59a47280aba629aa40fdd52a4512c899925941ce649711e9ba643dac262f3f207a0e474abb472592eb317face4db6f1fb9f225b9f919bbab5be564438ce274b3338fcfb2a5aba1e652a4852bc2f415b031cabd20fffdb8db0aba7617609101461fac0f9e4b0519dd76022ff6c9a528406c.45e9743e2836afb1581b9f9432771341b6bc4bddf878c6165ef88d77b05ee02f", // "adminpassword"
       firstName: "Admin",
       lastName: "User",
       email: "admin@skybooker.com",
       isAdmin: true
     });
-    
+
     // Create default payment account
     this.paymentAccounts.set(1, {
       id: 1,
@@ -148,7 +147,7 @@ export class MemStorage implements IStorage {
       taxRate: 0.13,
       serviceFeeRate: 0.04
     });
-    
+
     // Add sample locations
     const sampleLocations = [
       { code: "JFK", name: "John F. Kennedy International Airport", city: "New York", country: "USA" },
@@ -162,32 +161,32 @@ export class MemStorage implements IStorage {
       { code: "SYD", name: "Sydney Airport", city: "Sydney", country: "Australia" },
       { code: "SIN", name: "Singapore Changi Airport", city: "Singapore", country: "Singapore" }
     ];
-    
+
     sampleLocations.forEach(loc => {
       const id = this.currentLocationId++;
       this.locations.set(id, { id, ...loc });
     });
-    
+
     // Create some sample flights
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
-    
+
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
     nextWeek.setHours(0, 0, 0, 0);
-    
+
     // Helper to create flight departure and arrival times
     const createFlightTimes = (baseDate: Date, departureHour: number, durationHours: number) => {
       const departure = new Date(baseDate);
       departure.setHours(departureHour, Math.floor(Math.random() * 60), 0, 0);
-      
+
       const arrival = new Date(departure);
       arrival.setHours(departure.getHours() + durationHours, departure.getMinutes() + Math.floor(Math.random() * 30), 0, 0);
-      
+
       return { departure, arrival };
     };
-    
+
     // Create JFK to CDG flights
     const jfkToCdgFlight1 = createFlightTimes(tomorrow, 8, 8);
     this.flights.set(this.currentFlightId++, {
@@ -205,7 +204,7 @@ export class MemStorage implements IStorage {
       businessCapacity: 40,
       firstClassCapacity: 10
     });
-    
+
     const jfkToCdgFlight2 = createFlightTimes(tomorrow, 11, 7);
     this.flights.set(this.currentFlightId++, {
       id: 2,
@@ -222,7 +221,7 @@ export class MemStorage implements IStorage {
       businessCapacity: 30,
       firstClassCapacity: 10
     });
-    
+
     const jfkToCdgFlight3 = createFlightTimes(tomorrow, 15, 7);
     this.flights.set(this.currentFlightId++, {
       id: 3,
@@ -239,7 +238,7 @@ export class MemStorage implements IStorage {
       businessCapacity: 30,
       firstClassCapacity: 10
     });
-    
+
     // Create LAX to HND flights
     const laxToHndFlight = createFlightTimes(nextWeek, 10, 12);
     this.flights.set(this.currentFlightId++, {
@@ -257,7 +256,7 @@ export class MemStorage implements IStorage {
       businessCapacity: 35,
       firstClassCapacity: 15
     });
-    
+
     // Create DFW to LHR flights
     const dfwToLhrFlight = createFlightTimes(nextWeek, 18, 9);
     this.flights.set(this.currentFlightId++, {
@@ -275,7 +274,7 @@ export class MemStorage implements IStorage {
       businessCapacity: 40,
       firstClassCapacity: 10
     });
-    
+
     this.currentUserId = 2; // Start from 2 since we already have admin
     this.currentLocationId = 11; // Start from 11 since we have 10 locations
     this.currentFlightId = 6; // Start from 6 since we have 5 flights
@@ -302,8 +301,8 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
     // Ensure isAdmin is a boolean
-    const user: User = { 
-      ...insertUser, 
+    const user: User = {
+      ...insertUser,
       id,
       isAdmin: insertUser.isAdmin || false // Default to false if not provided
     };
@@ -316,33 +315,33 @@ export class MemStorage implements IStorage {
     if (!existingUser) {
       return undefined;
     }
-    
-    const updatedUser: User = { 
+
+    const updatedUser: User = {
       ...existingUser,
       ...userData,
       id // Ensure the ID stays the same
     };
-    
+
     this.users.set(id, updatedUser);
     return updatedUser;
   }
 
   async deleteUser(id: number): Promise<boolean> {
     const exists = this.users.has(id);
-    
+
     if (exists) {
       // Check if user has bookings
       const hasBookings = Array.from(this.bookings.values()).some(
         (booking) => booking.userId === id
       );
-      
+
       if (hasBookings) {
         throw new Error("Cannot delete user with associated bookings");
       }
-      
+
       this.users.delete(id);
     }
-    
+
     return exists;
   }
 
@@ -377,7 +376,7 @@ export class MemStorage implements IStorage {
     if (!existingLocation) {
       return undefined;
     }
-    
+
     const updatedLocation: Location = { ...insertLocation, id };
     this.locations.set(id, updatedLocation);
     return updatedLocation;
@@ -390,11 +389,11 @@ export class MemStorage implements IStorage {
       const hasFlights = Array.from(this.flights.values()).some(
         (flight) => flight.originId === id || flight.destinationId === id
       );
-      
+
       if (hasFlights) {
         throw new Error("Cannot delete location with associated flights");
       }
-      
+
       this.locations.delete(id);
     }
     return exists;
@@ -414,18 +413,18 @@ export class MemStorage implements IStorage {
     if (!flight) {
       return undefined;
     }
-    
+
     return this.enhanceFlightWithLocations(flight);
   }
 
   private enhanceFlightWithLocations(flight: Flight): FlightWithLocations {
     const origin = this.locations.get(flight.originId);
     const destination = this.locations.get(flight.destinationId);
-    
+
     if (!origin || !destination) {
       throw new Error(`Could not find origin or destination for flight ${flight.id}`);
     }
-    
+
     return {
       ...flight,
       origin,
@@ -445,7 +444,7 @@ export class MemStorage implements IStorage {
     if (!existingFlight) {
       return undefined;
     }
-    
+
     const updatedFlight: Flight = { ...insertFlight, id };
     this.flights.set(id, updatedFlight);
     return updatedFlight;
@@ -458,11 +457,11 @@ export class MemStorage implements IStorage {
       const hasBookings = Array.from(this.bookings.values()).some(
         (booking) => booking.flightId === id
       );
-      
+
       if (hasBookings) {
         throw new Error("Cannot delete flight with associated bookings");
       }
-      
+
       this.flights.delete(id);
     }
     return exists;
@@ -473,22 +472,22 @@ export class MemStorage implements IStorage {
     const origin = Array.from(this.locations.values()).find(
       loc => loc.code.toLowerCase() === originCode.toLowerCase()
     );
-    
+
     const destination = Array.from(this.locations.values()).find(
       loc => loc.code.toLowerCase() === destinationCode.toLowerCase()
     );
-    
+
     if (!origin || !destination) {
       return [];
     }
-    
+
     // Convert date to start/end of day
     const startDate = new Date(date);
     startDate.setHours(0, 0, 0, 0);
-    
+
     const endDate = new Date(date);
     endDate.setHours(23, 59, 59, 999);
-    
+
     // Filter flights
     const matchingFlights = Array.from(this.flights.values()).filter(flight => {
       const departureTime = new Date(flight.departureTime);
@@ -499,7 +498,7 @@ export class MemStorage implements IStorage {
         departureTime <= endDate
       );
     });
-    
+
     // Enhance with location data
     return matchingFlights.map(flight => this.enhanceFlightWithLocations(flight));
   }
@@ -516,7 +515,7 @@ export class MemStorage implements IStorage {
     if (!booking) {
       return undefined;
     }
-    
+
     return this.enhanceBookingWithDetails(booking);
   }
 
@@ -524,7 +523,7 @@ export class MemStorage implements IStorage {
     const userBookings = Array.from(this.bookings.values()).filter(
       booking => booking.userId === userId
     );
-    
+
     return Promise.all(
       userBookings.map(booking => this.enhanceBookingWithDetails(booking))
     );
@@ -533,13 +532,13 @@ export class MemStorage implements IStorage {
   private async enhanceBookingWithDetails(booking: Booking): Promise<BookingWithDetails> {
     const user = this.users.get(booking.userId);
     const flight = this.flights.get(booking.flightId);
-    
+
     if (!user || !flight) {
       throw new Error(`Could not find user or flight for booking ${booking.id}`);
     }
-    
+
     const flightWithLocations = this.enhanceFlightWithLocations(flight);
-    
+
     return {
       ...booking,
       user,
@@ -549,7 +548,7 @@ export class MemStorage implements IStorage {
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
     const id = this.currentBookingId++;
-    
+
     // Create booking with proper typing
     const booking: Booking = {
       id,
@@ -568,7 +567,7 @@ export class MemStorage implements IStorage {
       receiptPath: null,
       declineReason: null
     };
-    
+
     this.bookings.set(id, booking);
     return booking;
   }
@@ -578,13 +577,13 @@ export class MemStorage implements IStorage {
     if (!booking) {
       return undefined;
     }
-    
+
     const updatedBooking: Booking = {
       ...booking,
       status,
       declineReason: status === "Declined" && declineReason ? declineReason : booking.declineReason
     };
-    
+
     this.bookings.set(id, updatedBooking);
     return updatedBooking;
   }
@@ -594,33 +593,33 @@ export class MemStorage implements IStorage {
     if (!booking) {
       return undefined;
     }
-    
+
     const updatedBooking: Booking = {
       ...booking,
       paymentReference: payment.paymentReference ?? booking.paymentReference,
       paymentProof: payment.paymentProof ?? booking.paymentProof,
       receiptPath: payment.receiptPath ?? booking.receiptPath
     };
-    
+
     this.bookings.set(id, updatedBooking);
     return updatedBooking;
   }
-  
+
   async updateBookingReceipt(id: number, receiptPath: string): Promise<Booking | undefined> {
     const booking = this.bookings.get(id);
     if (!booking) {
       return undefined;
     }
-    
+
     const updatedBooking: Booking = {
       ...booking,
       receiptPath
     };
-    
+
     this.bookings.set(id, updatedBooking);
     return updatedBooking;
   }
-  
+
   async deleteBooking(id: number): Promise<boolean> {
     const exists = this.bookings.has(id);
     if (exists) {
@@ -628,17 +627,17 @@ export class MemStorage implements IStorage {
     }
     return exists;
   }
-  
+
   async deleteManyBookings(ids: number[]): Promise<number> {
     let deletedCount = 0;
-    
+
     for (const id of ids) {
       if (this.bookings.has(id)) {
         this.bookings.delete(id);
         deletedCount++;
       }
     }
-    
+
     return deletedCount;
   }
 
@@ -651,15 +650,15 @@ export class MemStorage implements IStorage {
     // We always update the first payment account for simplicity
     const existingAccount = Array.from(this.paymentAccounts.values())[0];
     let id = 1;
-    
+
     if (existingAccount) {
       id = existingAccount.id;
     } else {
       id = this.currentPaymentAccountId++;
     }
-    
+
     // Ensure all optional fields have null values if undefined
-    const updatedAccount: PaymentAccount = { 
+    const updatedAccount: PaymentAccount = {
       id,
       bankName: account.bankName ?? null,
       accountName: account.accountName ?? null,
@@ -675,7 +674,7 @@ export class MemStorage implements IStorage {
       serviceFeeRate: account.serviceFeeRate === undefined ? 0.04 : account.serviceFeeRate
     };
     this.paymentAccounts.set(id, updatedAccount);
-    
+
     return updatedAccount;
   }
 
@@ -693,7 +692,7 @@ export class MemStorage implements IStorage {
   async upsertSiteSetting(setting: InsertSiteSetting): Promise<SiteSetting> {
     // Check if setting already exists
     const existingSetting = await this.getSiteSettingByKey(setting.key);
-    
+
     if (existingSetting) {
       // Update existing setting
       const updatedSetting: SiteSetting = {
@@ -724,7 +723,7 @@ export class MemStorage implements IStorage {
     }
     return this.siteSettings.delete(setting.id);
   }
-  
+
   // Page Content methods
   async getAllPageContents(): Promise<PageContent[]> {
     return Array.from(this.pageContents.values());
@@ -743,7 +742,7 @@ export class MemStorage implements IStorage {
       id,
       updatedAt: new Date()
     };
-    
+
     this.pageContents.set(id, newContent);
     return newContent;
   }
@@ -753,13 +752,13 @@ export class MemStorage implements IStorage {
     if (!existingContent) {
       return undefined;
     }
-    
+
     const updatedContent: PageContent = {
       ...existingContent,
       ...content,
       updatedAt: new Date()
     };
-    
+
     this.pageContents.set(id, updatedContent);
     return updatedContent;
   }

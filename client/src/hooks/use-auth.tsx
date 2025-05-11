@@ -4,8 +4,8 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { insertUserSchema, User as SelectUser, InsertUser, LoginData } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { User as SelectUser, InsertUser, LoginData } from "@shared/schema";
+import { apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -23,7 +23,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  
+
   const {
     data: user,
     error,
@@ -35,15 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await fetch(queryKey[0] as string, {
           credentials: "include",
         });
-        
+
         if (res.status === 401) {
           return null;
         }
-        
+
         if (!res.ok) {
           throw new Error(`Error fetching user: ${res.status}`);
         }
-        
+
         return await res.json();
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login successful",
         description: `Welcome, ${user.firstName}!`,
       });
-      
+
       // Redirect to home page
       setLocation("/");
     },
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Registration successful",
         description: `Welcome to SkyBooker, ${user.firstName}!`,
       });
-      
+
       // Redirect to home page
       setLocation("/");
     },
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Logged out successfully",
       });
-      
+
       // Redirect to login page
       setLocation("/auth");
     },
