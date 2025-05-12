@@ -34,25 +34,25 @@ const popularDestinations = [
     imageUrl: "/images/destinations/paris.jpg",
     city: "Paris",
     country: "France",
-    price: 399
+    price: 15288
   },
   {
     imageUrl: "/images/destinations/tokyo.jpg",
     city: "Tokyo",
     country: "Japan",
-    price: 799
+    price: 18750
   },
   {
     imageUrl: "/images/destinations/cancun.jpg",
     city: "Cancun",
     country: "Mexico",
-    price: 299
+    price: 12900
   },
   {
     imageUrl: "/images/destinations/dubai.jpg",
     city: "Dubai",
     country: "UAE",
-    price: 549
+    price: 22,550
   }
 ];
 
