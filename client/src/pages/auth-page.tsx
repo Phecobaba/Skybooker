@@ -119,24 +119,24 @@ export default function AuthPage() {
                   onSubmit={loginForm.handleSubmit(onLoginSubmit)}
                   className="space-y-6"
                 >
-                  <FormField
-                    control={loginForm.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter your username"
-                            {...field}
-                            autoComplete="username"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
+                 <FormItem>
+  <FormLabel htmlFor="login-username">Username</FormLabel>
+  <FormControl>
+    <input
+      id="login-username"
+      type="text"
+      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+      placeholder="Enter your username"
+      value={loginForm.watch("username")}
+      onChange={(e) => loginForm.setValue("username", e.target.value)}
+    />
+  </FormControl>
+  {loginForm.formState.errors.username && (
+    <p className="text-sm font-medium text-destructive">
+      {loginForm.formState.errors.username.message}
+    </p>
+  )}
+</FormItem>
                   <FormField
                     control={loginForm.control}
                     name="password"
@@ -239,23 +239,24 @@ export default function AuthPage() {
                     />
                   </div>
 
-                  <FormField
-                    control={registerForm.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Choose a username"
-                            {...field}
-                            autoComplete="username"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                 <FormItem>
+  <FormLabel htmlFor="username">Username</FormLabel>
+  <FormControl>
+    <input
+      id="username"
+      type="text"
+      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+      placeholder="Choose a username"
+      value={registerForm.watch("username")}
+      onChange={(e) => registerForm.setValue("username", e.target.value)}
+    />
+  </FormControl>
+  {registerForm.formState.errors.username && (
+    <p className="text-sm font-medium text-destructive">
+      {registerForm.formState.errors.username.message}
+    </p>
+  )}
+</FormItem>
 
                   <FormField
                     control={registerForm.control}
