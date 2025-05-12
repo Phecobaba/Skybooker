@@ -52,7 +52,7 @@ const popularDestinations = [
     imageUrl: "/images/destinations/dubai.jpg",
     city: "Dubai",
     country: "UAE",
-    price: 22,550
+    price: 22550
   }
 ];
 
