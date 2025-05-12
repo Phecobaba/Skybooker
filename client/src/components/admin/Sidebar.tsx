@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,6 +15,20 @@ export default function AdminSidebar() {
   const [location] = useLocation();
   const { user, logoutMutation } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Close sidebar on ESC (mobile)
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsMobileOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileOpen]);
+
+  const openMobileSidebar = useCallback(() => setIsMobileOpen(true), []);
+  const closeMobileSidebar = useCallback(() => setIsMobileOpen(false), []);
 
   const links: SidebarLink[] = [
     {
@@ -239,93 +253,78 @@ export default function AdminSidebar() {
     return null;
   }
 
+  // Hamburger button for mobile
+  // Sidebar overlay for mobile
   return (
-    <div
-      className={cn(
-        "hidden md:flex md:flex-shrink-0 transition-all duration-300",
-        isCollapsed ? "md:w-16" : "md:w-64"
-      )}
-    >
-      <div className="flex flex-col w-full bg-primary text-white">
-        <div className="flex h-16 px-4 items-center border-b border-primary-700 justify-between">
-          {!isCollapsed && (
-            <span className="text-xl font-bold">
-              Sky<span className="text-orange-500">Booker</span>{" "}
-              <span className="text-xs font-normal bg-primary-700 px-2 py-1 rounded ml-1">
-                Admin
+    <>
+      {/* Hamburger button (mobile only) */}
+      <button
+        className="fixed top-4 left-4 z-50 md:hidden bg-primary text-white p-2 rounded-full shadow-lg focus:outline-none"
+        aria-label="Open sidebar"
+        onClick={openMobileSidebar}
+      >
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Mobile sidebar drawer */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-40 flex md:hidden">
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 transition-opacity"
+            onClick={closeMobileSidebar}
+            aria-label="Close sidebar overlay"
+          />
+          {/* Sidebar drawer */}
+          <div className="relative w-64 max-w-full bg-primary text-white flex flex-col h-full shadow-xl animate-slide-in-left">
+            <div className="flex h-16 px-4 items-center border-b border-primary-700 justify-between">
+              <span className="text-xl font-bold">
+                Sky<span className="text-orange-500">Booker</span>{" "}
+                <span className="text-xs font-normal bg-primary-700 px-2 py-1 rounded ml-1">Admin</span>
               </span>
-            </span>
-          )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-700"
-          >
-            {isCollapsed ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+              <button
+                onClick={closeMobileSidebar}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-700"
+                aria-label="Close sidebar"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-                />
-              </svg>
-            )}
-          </button>
-        </div>
-        <div className="h-0 flex-1 flex flex-col overflow-y-auto">
-          <nav className="flex-1 px-2 py-4 space-y-1">
-            {links.map((link) => {
-              const isActive = location === link.href;
-              return (
-                <Link key={link.href} href={link.href}>
-                  <span
-                    className={cn(
-                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer",
-                      isActive
-                        ? "sidebar-link-active"
-                        : "text-white hover:bg-primary-700"
-                    )}
-                  >
-                    <span className="mr-3 text-lg">{link.icon}</span>
-                    {!isCollapsed && <span>{link.label}</span>}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-        <div className="flex-shrink-0 flex border-t border-primary-700 p-4">
-          <div className="flex items-center w-full">
-            <div className="flex-shrink-0">
-              <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary-600">
-                <span className="text-sm font-medium leading-none text-white">
-                  {user?.firstName?.charAt(0) || "A"}
-                </span>
-              </span>
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            {!isCollapsed && (
-              <>
+            <div className="h-0 flex-1 flex flex-col overflow-y-auto">
+              <nav className="flex-1 px-2 py-4 space-y-1">
+                {links.map((link) => {
+                  const isActive = location === link.href;
+                  return (
+                    <Link key={link.href} href={link.href} onClick={closeMobileSidebar}>
+                      <span
+                        className={cn(
+                          "group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer",
+                          isActive
+                            ? "sidebar-link-active"
+                            : "text-white hover:bg-primary-700"
+                        )}
+                      >
+                        <span className="mr-3 text-lg">{link.icon}</span>
+                        <span>{link.label}</span>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+            <div className="flex-shrink-0 flex border-t border-primary-700 p-4">
+              <div className="flex items-center w-full">
+                <div className="flex-shrink-0">
+                  <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary-600">
+                    <span className="text-sm font-medium leading-none text-white">
+                      {user?.firstName?.charAt(0) || "A"}
+                    </span>
+                  </span>
+                </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-white">
                     {user?.firstName} {user?.lastName}
@@ -342,11 +341,122 @@ export default function AdminSidebar() {
                 >
                   <LogOut className="h-5 w-5" />
                 </Button>
-              </>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop sidebar (unchanged) */}
+      <div
+        className={cn(
+          "hidden md:flex md:flex-shrink-0 transition-all duration-300",
+          isCollapsed ? "md:w-16" : "md:w-64"
+        )}
+      >
+        <div className="flex flex-col w-full bg-primary text-white">
+          <div className="flex h-16 px-4 items-center border-b border-primary-700 justify-between">
+            {!isCollapsed && (
+              <span className="text-xl font-bold">
+                Sky<span className="text-orange-500">Booker</span>{" "}
+                <span className="text-xs font-normal bg-primary-700 px-2 py-1 rounded ml-1">
+                  Admin
+                </span>
+              </span>
             )}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary-700"
+              aria-label="Toggle collapse sidebar"
+            >
+              {isCollapsed ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+          <div className="h-0 flex-1 flex flex-col overflow-y-auto">
+            <nav className="flex-1 px-2 py-4 space-y-1">
+              {links.map((link) => {
+                const isActive = location === link.href;
+                return (
+                  <Link key={link.href} href={link.href}>
+                    <span
+                      className={cn(
+                        "group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer",
+                        isActive
+                          ? "sidebar-link-active"
+                          : "text-white hover:bg-primary-700"
+                      )}
+                    >
+                      <span className="mr-3 text-lg">{link.icon}</span>
+                      {!isCollapsed && <span>{link.label}</span>}
+                    </span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+          <div className="flex-shrink-0 flex border-t border-primary-700 p-4">
+            <div className="flex items-center w-full">
+              <div className="flex-shrink-0">
+                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-primary-600">
+                  <span className="text-sm font-medium leading-none text-white">
+                    {user?.firstName?.charAt(0) || "A"}
+                  </span>
+                </span>
+              </div>
+              {!isCollapsed && (
+                <>
+                  <div className="ml-3 flex-1">
+                    <p className="text-sm font-medium text-white">
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <p className="text-xs font-medium text-primary-300 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="text-primary-300 hover:text-white"
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
